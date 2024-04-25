@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RotationSolver.DiscordBot", "RotationSolver.DiscordBot\RotationSolver.DiscordBot.csproj", "{14E76B7D-D1D7-41CB-836F-1274D8DEDAFE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{14E76B7D-D1D7-41CB-836F-1274D8DEDAFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14E76B7D-D1D7-41CB-836F-1274D8DEDAFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14E76B7D-D1D7-41CB-836F-1274D8DEDAFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14E76B7D-D1D7-41CB-836F-1274D8DEDAFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A101C083-D3EB-48BD-A11B-F33451DAB02E}
+	EndGlobalSection
+EndGlobal

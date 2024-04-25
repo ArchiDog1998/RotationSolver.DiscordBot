@@ -1,0 +1,1 @@
+# RotationSolver.DiscordBot

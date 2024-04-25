@@ -199,7 +199,7 @@ public static class Service
             await SupportersCommands.UpdateNames();
             await SupportersCommands.UpdateHashes();
         }
-        if (roles.Any(i => i == 1231784310240182354)) //Rotation Dev.
+        if (roles.Any(i => i == Config.RotationDevRole)) //Rotation Dev.
         {
             DiscordChannel? channel = null;
             if (SqlHelper.GetChannelId(member.Id, out var data) && data.Length > 0)

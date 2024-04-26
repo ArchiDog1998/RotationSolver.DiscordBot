@@ -98,6 +98,8 @@ internal static class GithubHelper
         }
     }
 
+    internal static string ModifySupporterName = "Modified the supporter's name.",
+        ModifySupporterHash = "Modified the supporter's hash.";
     private static readonly Dictionary<long, List<string>> _sha = [];
     internal static void SendGithubPush(string s)
     {
@@ -127,6 +129,10 @@ internal static class GithubHelper
             foreach (var sha in shaes)
             {
                 var commit = await GitHubClient.Repository.Commit.Get(id, sha);
+
+                if (commit.Commit.Message == ModifySupporterName
+                    || commit.Commit.Message == ModifySupporterHash) continue;
+
                 authorList.Add(commit.Author);
 
                 var message = commit.Commit.Message.Split("\n");
@@ -157,6 +163,8 @@ internal static class GithubHelper
                 .AddField("Deletions", $"**-{deletions}**", true)
                 .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));
         }
+
+        _sha.Clear();
         return [.. list];
     }
 }

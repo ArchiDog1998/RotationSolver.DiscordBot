@@ -62,7 +62,7 @@ public class SupportersCommands : ApplicationCommandModule
 
         bool ModifySupporters(ref HashSet<string>? value, out string commit)
         {
-            commit = "Modified the supporter's name.";
+            commit = GithubHelper.ModifySupporterName;
             value ??= [];
 
             var delete = value.Except(supporters);
@@ -135,7 +135,7 @@ public class SupportersCommands : ApplicationCommandModule
 
         bool ModifySupportersHash(ref HashSet<string>? value, out string commit)
         {
-            commit = "Modified the supporter's hash.";
+            commit = GithubHelper.ModifySupporterHash;
             value ??= [];
 
             var delete = value.Except(supportersHash);

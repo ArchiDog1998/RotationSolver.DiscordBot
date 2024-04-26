@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using DSharpPlus.Entities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Octokit;
 
 namespace RotationSolver.DiscordBot;
@@ -94,5 +96,67 @@ internal static class GithubHelper
         catch
         {
         }
+    }
+
+    private static readonly Dictionary<long, List<string>> _sha = [];
+    internal static void SendGithubPush(string s)
+    {
+        var obj = JObject.Parse(s);
+        var token = obj["repository"];
+        if (token == null) return;
+
+        var id = long.Parse(token["id"]!.ToString());
+        var hash = obj["after"]!.ToString();
+
+        if (!_sha.TryGetValue(id, out var list)) list = [];
+        list.Add(hash);
+        _sha[id] = list;
+    }
+
+    internal static async Task<DiscordEmbed[]> GetCommitMessage()
+    {
+        var list = new List<DiscordEmbed>();
+        foreach ((var id, var shaes) in _sha)
+        {
+            var project = await GitHubClient.Repository.Get(id);
+
+            List<Author> authorList = [];
+            List<string> labels = [];
+            int addition = 0, deletions = 0;
+
+            foreach (var sha in shaes)
+            {
+                var commit = await GitHubClient.Repository.Commit.Get(id, sha);
+                authorList.Add(commit.Author);
+
+                var message = commit.Commit.Message.Split("\n");
+                var label = $"- {message.FirstOrDefault()} [Link]({commit.HtmlUrl})";
+
+                if (message.Length > 1)
+                {
+                    var lt = message.ToList();
+                    lt.RemoveAt(0);
+                    label += "\n" + string.Join("\n", lt);
+                }
+
+                labels.Add(label);
+
+                addition += commit.Files.Sum(f => f.Additions);
+                deletions += commit.Files.Sum(f => f.Deletions);
+            }
+
+            labels.Sort();
+
+            string body = string.Join("\n", labels);
+
+            list.Add(new DiscordEmbedBuilder()
+                .WithTitle(project.Name)
+                .WithUrl(project.HtmlUrl)
+                .WithDescription(body)
+                .AddField("Additions", $"**+{addition}**", true)
+                .AddField("Deletions", $"**-{deletions}**", true)
+                .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));
+        }
+        return [.. list];
     }
 }

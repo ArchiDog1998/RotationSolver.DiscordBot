@@ -28,7 +28,6 @@ internal class Listener : IDisposable
 
         if (request.HasEntityBody)
         {
-            Console.WriteLine(request.Url);
             using var body = request.InputStream;
             using var reader = new StreamReader(body, request.ContentEncoding);
 

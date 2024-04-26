@@ -3,12 +3,11 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
-using Octokit;
 using RotationSolver.DiscordBot.SlashCommands;
 
 namespace RotationSolver.DiscordBot;
 
-public static class Service
+public static partial class Service
 {
     internal static DiscordClient Client { get; private set; } = null!;
 
@@ -124,6 +123,7 @@ public static class Service
 
     private static async Task DontAtMe(MessageCreateEventArgs args, DiscordMember member)
     {
+        if (args.Message.ReferencedMessage != null) return;
         var main = args.MentionedUsers.FirstOrDefault(u => u.Id == Config.ArchiDiscordID);
         if (main == null) return;
 
@@ -336,7 +336,7 @@ public static class Service
         var login = token?["login"]?.ToString();
         var authorUrl = token?["html_url"]?.ToString();
 
-        var channel = await Client.GetChannelAsync(1231782776685199480);
+        var channel = await Client.GetChannelAsync(Config.AnnounceMent);
 
         var embedBuilder = new DiscordEmbedBuilder()
             .WithAuthor(login, authorUrl, icon)

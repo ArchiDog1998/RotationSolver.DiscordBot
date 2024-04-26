@@ -31,7 +31,15 @@ internal class Listener : IDisposable
             Console.WriteLine(request.Url);
             using var body = request.InputStream;
             using var reader = new StreamReader(body, request.ContentEncoding);
-            _actStr(reader.ReadToEnd());
+
+            try
+            {
+                _actStr(reader.ReadToEnd());
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         using (var response = context.Response)

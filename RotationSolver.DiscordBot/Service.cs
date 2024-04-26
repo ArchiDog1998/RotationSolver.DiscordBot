@@ -4,6 +4,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
 using RotationSolver.DiscordBot.SlashCommands;
+using System.Web;
 
 namespace RotationSolver.DiscordBot;
 
@@ -347,5 +348,18 @@ public static partial class Service
 
         var message = await channel.SendMessageAsync(embedBuilder);
         await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+    }
+
+    internal static async void SendKofi(string s)
+    {
+        s = HttpUtility.UrlDecode(s[5..]);
+        var obj = JObject.Parse(s);
+        var name = obj["from_name"]?.ToString();
+        var amount = obj["amount"]?.ToString();
+        var currency = obj["currency"]?.ToString();
+
+        var channel = await Client.GetChannelAsync(Config.KofiChannel);
+
+        await channel.SendMessageAsync($"Thank **{name}** for donating {currency} {amount}! :sparkling_heart:");
     }
 }

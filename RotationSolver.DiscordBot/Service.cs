@@ -363,6 +363,6 @@ public static partial class Service
 
         var channel = await Client.GetChannelAsync(Config.KofiChannel);
 
-        await channel.SendMessageAsync($"Thank **{name}** for donating {currency} {amount}! :sparkling_heart:");
+        await channel.SendMessageAsync($"Thank you **{name}** for donating {currency} {amount}! :sparkling_heart:");
     }
 }

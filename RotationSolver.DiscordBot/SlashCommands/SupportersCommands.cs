@@ -37,7 +37,7 @@ public class SupporterAttribute : BotChannelAttribute
     }
 }
 
-[SlashCommandGroup("Supporters", "The commands for supporters")]
+[SlashCommandGroup("Supporter", "The commands for supporters")]
 public class SupportersCommands : ApplicationCommandModule
 {
     [Supporter]

@@ -122,7 +122,7 @@ internal static class GithubHelper
         {
             var project = await GitHubClient.Repository.Get(id);
 
-            List<Author> authorList = [];
+            HashSet<Author> authorList = [];
             List<string> labels = [];
             int addition = 0, deletions = 0;
 

@@ -50,8 +50,12 @@ public static partial class Service
                     await UpdateContributorRoles(guild);
                 }
                 var channel = await Client.GetChannelAsync(Config.GithubChannel);
-                var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbeds(await GithubHelper.GetCommitMessage()));
-                await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+                var embeds = await GithubHelper.GetCommitMessage();
+                if (embeds.Length != 0)
+                {
+                    var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbeds(embeds));
+                    await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+                }
             }
         });
     }

@@ -108,9 +108,11 @@ internal static class GithubHelper
         if (token == null) return;
 
         var id = long.Parse(token["id"]!.ToString());
-        var shaes = obj["after"]!.ToString();
-
-        SqlHelper.InsertGithubCommit(shaes, id);
+        foreach (var commit in (JArray)obj["commits"]!)
+        {
+            var sha = commit["id"]!.ToString();
+            SqlHelper.InsertGithubCommit(sha, id);
+        }
     }
 
     internal static async Task<DiscordEmbed[]> GetCommitMessage()

@@ -36,6 +36,11 @@ public static partial class Service
 
         _ = Task.Run(async () =>
         {
+            var now = DateTime.UtcNow + TimeSpan.FromHours(10);
+            var span = TimeSpan.FromDays(1) - (now - now.Date);
+
+            await Task.Delay(span);
+
             using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
 
             while (await timer.WaitForNextTickAsync())

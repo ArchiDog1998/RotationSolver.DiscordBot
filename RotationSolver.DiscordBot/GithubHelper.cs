@@ -118,7 +118,7 @@ internal static class GithubHelper
     internal static async Task<DiscordEmbed[]> GetCommitMessage()
     {
         var list = new List<DiscordEmbed>();
-        SqlHelper.GetCommits(out var data);
+        SqlHelper.GetAndClearCommits(out var data);
         foreach (var grp in data.GroupBy(i => i.Repo))
         {
             var id = grp.Key;
@@ -168,8 +168,6 @@ internal static class GithubHelper
                 .AddField("Deletions", $"**-{deletions}**", true)
                 .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));
         }
-
-        SqlHelper.TruncateCommits();
         return [.. list];
     }
 }

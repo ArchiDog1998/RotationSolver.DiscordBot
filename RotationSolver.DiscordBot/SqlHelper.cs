@@ -15,14 +15,9 @@ internal static class SqlHelper
         return new NpgsqlConnection(Config.PostgreSQL);
     }
 
-    public static void TruncateCommits()
+    public static bool GetAndClearCommits(out CommitItem[] data)
     {
-        SetValues($"TRUNCATE public.\"GithubCommit\"");
-    }
-
-    public static bool GetCommits(out CommitItem[] data)
-    {
-        return GetObjects($"SELECT * FROM public.\"GithubCommit\"", out data, r =>
+        var result = GetObjects($"SELECT * FROM public.\"GithubCommit\"", out data, r =>
         {
             var result = new CommitItem
             {
@@ -31,6 +26,8 @@ internal static class SqlHelper
             };
             return result;
         });
+        SetValues($"TRUNCATE public.\"GithubCommit\"");
+        return result;
     }
 
     public static void InsertGithubCommit(string sha, long repoId)

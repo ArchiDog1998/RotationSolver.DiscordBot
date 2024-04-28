@@ -4,9 +4,38 @@ namespace RotationSolver.DiscordBot;
 
 internal static class SqlHelper
 {
+    public struct CommitItem
+    {
+        public string Sha { get; set; }
+        public long Repo { get; set; }
+    }
+
     private static NpgsqlConnection CreateConnection()
     {
         return new NpgsqlConnection(Config.PostgreSQL);
+    }
+
+    public static void TruncateCommits()
+    {
+        SetValues($"TRUNCATE public.\"GithubCommit\"");
+    }
+
+    public static bool GetCommits(out CommitItem[] data)
+    {
+        return GetObjects($"SELECT * FROM public.\"GithubCommit\"", out data, r =>
+        {
+            var result = new CommitItem
+            {
+                Sha = (string)r[0],
+                Repo = (long)r[1]
+            };
+            return result;
+        });
+    }
+
+    public static void InsertGithubCommit(string sha, long repoId)
+    {
+        SetValues($"INSERT INTO public.\"GithubCommit\"(\"Sha\", \"Repo\") VALUES ('{sha}', {repoId});");
     }
 
     public static void UpdateSupporterData(ulong id, int github, string hash, string name)
@@ -83,13 +112,14 @@ internal static class SqlHelper
         command.ExecuteNonQuery();
     }
 
-    private static bool GetObjects<T>(string cmd, out T[] array)
+    private static bool GetObjects<T>(string cmd, out T[] array, Func<NpgsqlDataReader, T>? convert = null)
     {
+        convert ??= r => (T)Convert.ChangeType(r, typeof(T));
+
         using var conenction = CreateConnection();
-
         conenction.Open();
-        using var command = new NpgsqlCommand(cmd, conenction);
 
+        using var command = new NpgsqlCommand(cmd, conenction);
         using var reader = command.ExecuteReader();
 
         var find = false;
@@ -99,7 +129,7 @@ internal static class SqlHelper
             find = true;
             try
             {
-                result.Add((T)Convert.ChangeType(reader[0], typeof(T)));
+                result.Add(convert(reader));
             }
             catch
             {

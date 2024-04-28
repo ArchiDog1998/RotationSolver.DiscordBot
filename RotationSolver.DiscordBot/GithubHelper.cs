@@ -100,7 +100,7 @@ internal static class GithubHelper
 
     internal static string ModifySupporterName = "Modified the supporter's name.",
         ModifySupporterHash = "Modified the supporter's hash.";
-    private static readonly Dictionary<long, List<string>> _sha = [];
+
     internal static void SendGithubPush(string s)
     {
         var obj = JObject.Parse(s);
@@ -108,32 +108,35 @@ internal static class GithubHelper
         if (token == null) return;
 
         var id = long.Parse(token["id"]!.ToString());
-        var hash = obj["after"]!.ToString();
+        var shaes = obj["after"]!.ToString();
 
-        if (!_sha.TryGetValue(id, out var list)) list = [];
-        list.Add(hash);
-        _sha[id] = list;
+        SqlHelper.InsertGithubCommit(shaes, id);
     }
 
     internal static async Task<DiscordEmbed[]> GetCommitMessage()
     {
         var list = new List<DiscordEmbed>();
-        foreach ((var id, var shaes) in _sha)
+        SqlHelper.GetCommits(out var data);
+        foreach (var grp in data.GroupBy(i => i.Repo))
         {
+            var id = grp.Key;
             var project = await GitHubClient.Repository.Get(id);
 
-            HashSet<Author> authorList = [];
+            List<Author> authorList = [];
             List<string> labels = [];
             int addition = 0, deletions = 0;
 
-            foreach (var sha in shaes)
+            foreach (var sha in grp.Select(i => i.Sha))
             {
                 var commit = await GitHubClient.Repository.Commit.Get(id, sha);
 
                 if (commit.Commit.Message == ModifySupporterName
                     || commit.Commit.Message == ModifySupporterHash) continue;
 
-                authorList.Add(commit.Author);
+                if(!authorList.Any(a => a.Id == commit.Author.Id))
+                {
+                    authorList.Add(commit.Author);
+                }
 
                 var message = commit.Commit.Message.Split("\n");
                 var label = $"- {message.FirstOrDefault()} [Link]({commit.HtmlUrl})";
@@ -164,7 +167,7 @@ internal static class GithubHelper
                 .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));
         }
 
-        _sha.Clear();
+        SqlHelper.TruncateCommits();
         return [.. list];
     }
 }

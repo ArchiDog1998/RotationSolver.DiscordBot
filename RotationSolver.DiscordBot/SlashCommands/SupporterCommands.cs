@@ -38,7 +38,7 @@ public class SupporterAttribute : BotChannelAttribute
 }
 
 [SlashCommandGroup("Supporter", "The commands for supporters")]
-public class SupportersCommands : ApplicationCommandModule
+public class SupporterCommands : ApplicationCommandModule
 {
     [Supporter]
     [SlashCooldown(1, 60, SlashCooldownBucketType.User)]

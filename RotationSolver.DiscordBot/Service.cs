@@ -24,7 +24,7 @@ public static partial class Service
 
         var slashCommands = Client.UseSlashCommands();
         slashCommands.RegisterCommands<GeneralCommands>();
-        slashCommands.RegisterCommands<SupportersCommands>();
+        slashCommands.RegisterCommands<SupporterCommands>();
         slashCommands.SlashCommandErrored += SlashCommands_SlashCommandErrored;
 
         Client.GuildMemberRemoved += Client_GuildMemberRemoved;
@@ -200,8 +200,8 @@ public static partial class Service
             {
                 SqlHelper.IsvalidSupporter(member.Id, false);
             }
-            await SupportersCommands.UpdateNames();
-            await SupportersCommands.UpdateHashes();
+            await SupporterCommands.UpdateNames();
+            await SupporterCommands.UpdateHashes();
         }
         if (roles.Any(i => i == Config.RotationDevRole)) //Rotation Dev.
         {
@@ -311,8 +311,8 @@ public static partial class Service
     {
         //Invalid Supporter.
         SqlHelper.IsvalidSupporter(args.Member.Id, false);
-        await SupportersCommands.UpdateNames();
-        await SupportersCommands.UpdateHashes();
+        await SupporterCommands.UpdateNames();
+        await SupporterCommands.UpdateHashes();
 
         //Invalid Rotation Dev.
         if (SqlHelper.GetChannelId(args.Member.Id, out var data) && data.Length > 0)

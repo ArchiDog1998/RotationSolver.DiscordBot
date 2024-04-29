@@ -43,7 +43,7 @@ public static partial class Service
 
             using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
 
-            while (await timer.WaitForNextTickAsync())
+            do
             {
                 foreach (var guild in Client.Guilds.Values)
                 {
@@ -57,6 +57,7 @@ public static partial class Service
                     await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
                 }
             }
+            while (await timer.WaitForNextTickAsync());
         });
     }
 
@@ -289,7 +290,14 @@ public static partial class Service
 
     private static async Task SlashCommands_SlashCommandErrored(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs args)
     {
-        await args.Context.DeferAsync();
+        try
+        {
+            await args.Context.DeferAsync();
+        }
+        catch
+        {
+
+        }
 
         var exception = args.Exception;
         if (exception is SlashExecutionChecksFailedException)
@@ -313,7 +321,14 @@ public static partial class Service
         }
         await dev.SendMessageAsync(str);
 
-        await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Errored! Already sent the error to {dev.Mention}, Please wait for their check!"));
+        try
+        {
+            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Errored! Already sent the error to {dev.Mention}, Please wait for their check!"));
+        }
+        catch
+        {
+
+        }
     }
 
     private static async Task Client_GuildMemberRemoved(DiscordClient sender, GuildMemberRemoveEventArgs args)

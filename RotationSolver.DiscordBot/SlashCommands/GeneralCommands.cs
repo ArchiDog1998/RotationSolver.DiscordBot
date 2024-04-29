@@ -23,6 +23,23 @@ public class BotChannelAttribute : SlashCheckBaseAttribute
     }
 }
 
+public class RotationDevRoleAttribute : SlashCheckBaseAttribute
+{
+    public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
+    {
+        if (!ctx.Member.Roles.Any(r => r.Id == Config.RotationDevRole)) //Wrong role.
+        {
+            await ctx.DeferAsync();
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Sorry, {ctx.Member.Mention}. This feature can only be used in For **Rotation Dev**!"));
+
+            await Task.Delay(10000);
+            await ctx.DeleteResponseAsync();
+            return false;
+        }
+        return true;
+    }
+}
+
 public class GeneralCommands : ApplicationCommandModule
 {
     [SlashCooldown(5, 60, SlashCooldownBucketType.User)]
@@ -97,7 +114,7 @@ public class GeneralCommands : ApplicationCommandModule
     internal static readonly ConcurrentDictionary<ulong, (DiscordMember, DiscordRole)> _askings = [];
 
     [BotChannel]
-    [SlashCommand("askforRole", "ask for the role you want")]
+    [SlashCommand("askforRole", "Ask for the role you want")]
     public async Task AskForRole(InteractionContext ctx,
         [Option("Role", "The role you want")] DiscordRole role,
         [Option("Description", "The description, github or ko-fi")] string desc)
@@ -121,5 +138,49 @@ public class GeneralCommands : ApplicationCommandModule
         _askings[mess.Id] = (ctx.Member, role);
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Your request was sent to {dev.Mention}, so please wait."));
+    }
+
+    [RotationDevRole]
+    [SlashCommand("pollforjobs", "Poll for jobs for helping you choose the job to develop.")]
+    public async Task PollForJobs(InteractionContext ctx,
+        [Option("pollType", "The types for poll.")] PollType type,
+        [Option("days", "The days for polling.")]double days = 1)
+    {
+        await ctx.DeferAsync();
+        var channel = await Service.Client.GetChannelAsync(Config.RotationAnnounceMentChannel);
+
+        var builder = new DiscordEmbedBuilder()
+        {
+            Title = $"Poll For Jobs!",
+            Color = DiscordColor.IndianRed,
+            Description = $"Which jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want below.",
+            Timestamp = DateTime.UtcNow.AddDays(days),
+        };
+        var message = await channel.SendMessageAsync(builder);
+
+        foreach (var emoji in ctx.Guild.Emojis.Values.OrderBy(v => v.Id))
+        {
+            if (!emoji.Name.StartsWith("Job")) continue;
+            await message.CreateReactionAsync(emoji);
+        }
+        await ctx.DeleteResponseAsync();
+
+        await Task.Delay(TimeSpan.FromDays(days));
+
+        message = await channel.GetMessageAsync(message.Id);
+
+        var reactions = message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job"));
+        var max = reactions.Select(r => r.Count).Max();
+        reactions = reactions.Where(reactions => reactions.Count == max);
+        var emojies = string.Join(" ", reactions.Select(reaction => reaction.Emoji.ToString()));
+        var count = max - 1;
+
+        await message.RespondAsync($"Hi, {ctx.Member.Mention}! The highest chosen {(reactions.Count() > 1 ? "jobs are" : "job is")}:\n {emojies}, with {count} vote{(count == 1 ? "s" : "")}!");
+    }
+
+    public enum PollType
+    {
+        Fix,
+        Create,
     }
 }

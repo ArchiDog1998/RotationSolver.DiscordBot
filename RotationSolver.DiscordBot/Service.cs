@@ -30,6 +30,8 @@ public static partial class Service
         Client.GuildMemberRemoved += Client_GuildMemberRemoved;
         Client.UnknownEvent += Client_UnknownEvent;
         Client.MessageCreated += Client_MessageCreated;
+        Client.MessageUpdated += Client_MessageUpdated;
+        Client.MessageDeleted += Client_MessageDeleted;
         Client.ComponentInteractionCreated += Client_ComponentInteractionCreated;
 
         await Client.ConnectAsync(new("RS on FFXIV"));
@@ -59,6 +61,43 @@ public static partial class Service
             }
             while (await timer.WaitForNextTickAsync());
         });
+    }
+
+    private static async Task Client_MessageDeleted(DiscordClient sender, MessageDeleteEventArgs args)
+    {
+        var channel = await sender.GetChannelAsync(Config.ServerLogChannel);
+        if (channel == null) return;
+
+        var author = args.Message.Author;
+        var time = args.Message.EditedTimestamp ?? args.Message.CreationTimestamp;
+
+        var embed = new DiscordEmbedBuilder()
+            .WithTitle("Message Deleted")
+            .WithTimestamp(time)
+            .WithAuthor(author.Username, iconUrl: author.AvatarUrl)
+            .WithDescription(args.Message.Content);
+
+        await channel.SendMessageAsync(embed);
+    }
+
+    private static async Task Client_MessageUpdated(DiscordClient sender, MessageUpdateEventArgs args)
+    {
+        var channel = await sender.GetChannelAsync(Config.ServerLogChannel);
+        if (channel == null) return;
+
+        var message = args.MessageBefore;
+        if (message == null) return;
+
+        var author = message.Author;
+        var time = message.EditedTimestamp ?? message.CreationTimestamp;
+
+        var embed = new DiscordEmbedBuilder()
+            .WithTitle("Message Edited")
+            .WithTimestamp(time)
+            .WithAuthor(author.Username, message.JumpLink.AbsoluteUri, author.AvatarUrl)
+            .WithDescription(message.Content);
+
+        await channel.SendMessageAsync(embed);
     }
 
     private static async Task Client_ComponentInteractionCreated(DiscordClient sender, ComponentInteractionCreateEventArgs args)

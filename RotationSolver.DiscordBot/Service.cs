@@ -32,7 +32,7 @@ public static partial class Service
         Client.MessageCreated += Client_MessageCreated;
         Client.ComponentInteractionCreated += Client_ComponentInteractionCreated;
 
-        await Client.ConnectAsync(new("RS on FFXIV."));
+        await Client.ConnectAsync(new("RS on FFXIV"));
 
         _ = Task.Run(async () =>
         {
@@ -236,7 +236,7 @@ public static partial class Service
                     var parent = guild.GetChannel(Config.RotationsCategory);
 
                     var p = new DiscordOverwriteBuilder(member).Allow(permissions);
-                    channel = await guild.CreateChannelAsync($"{member.DisplayName} Rotations", ChannelType.GuildForum, parent, $"Talk about everything about the rotations from {member.Mention}!", overwrites: [p]);
+                    channel = await guild.CreateChannelAsync($"🌱┃{member.DisplayName} Rotations", ChannelType.GuildForum, parent, $"Talk about everything about the rotations from {member.Mention}!", overwrites: [p]);
 
                     SqlHelper.UpdateRotationDevChannel(member.Id, channel.Id);
                 }

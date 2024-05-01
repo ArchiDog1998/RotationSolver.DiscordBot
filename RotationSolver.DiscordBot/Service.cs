@@ -69,6 +69,7 @@ public static partial class Service
         if (channel == null) return;
 
         var author = args.Message.Author;
+        if (author.IsBot) return;
         var time = args.Message.EditedTimestamp ?? args.Message.CreationTimestamp;
 
         var embed = new DiscordEmbedBuilder()
@@ -89,6 +90,8 @@ public static partial class Service
         if (message == null) return;
 
         var author = message.Author;
+        if (author.IsBot) return;
+
         var time = message.EditedTimestamp ?? message.CreationTimestamp;
 
         var embed = new DiscordEmbedBuilder()

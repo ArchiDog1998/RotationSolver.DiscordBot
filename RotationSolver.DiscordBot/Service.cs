@@ -75,10 +75,9 @@ public static partial class Service
         var embed = new DiscordEmbedBuilder()
             .WithTitle("Message Deleted")
             .WithTimestamp(time)
-            .WithAuthor(author.Username, iconUrl: author.AvatarUrl)
-            .WithDescription(args.Message.Content);
+            .WithAuthor(author.Username, iconUrl: author.AvatarUrl);
 
-        await channel.SendMessageAsync(embed);
+        await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithContent(args.Message.Content));
     }
 
     private static async Task Client_MessageUpdated(DiscordClient sender, MessageUpdateEventArgs args)
@@ -97,10 +96,9 @@ public static partial class Service
         var embed = new DiscordEmbedBuilder()
             .WithTitle("Message Edited")
             .WithTimestamp(time)
-            .WithAuthor(author.Username, message.JumpLink.AbsoluteUri, author.AvatarUrl)
-            .WithDescription(message.Content);
+            .WithAuthor(author.Username, message.JumpLink.AbsoluteUri, author.AvatarUrl);
 
-        await channel.SendMessageAsync(embed);
+        await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithContent(message.Content));
     }
 
     private static async Task Client_ComponentInteractionCreated(DiscordClient sender, ComponentInteractionCreateEventArgs args)

@@ -16,14 +16,14 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
             var builder = new DiscordEmbedBuilder()
             {
                 Title = "Be a **Supporter**!",
-                Url = "https://ko-fi.com/B0B0IN5DX",
-                ImageUrl = "https://storage.ko-fi.com/cdn/brandasset/kofi_bg_tag_dark.png",
+                Url = "https://www.patreon.com/ArchiDog1998",
+                ImageUrl = "https://c7.patreon.com/https%3A%2F%2Fwww.patreon.com%2F%2Fcreator-teaser-image%2F7803473/selector/%23creator-teaser%2C.png",
                 Color = DiscordColor.IndianRed,
                 Description = $"Hi, {ctx.Member.Mention}! You dont have any of the roles {string.Join(", ", roles)}!\n \n"
                     + "If you have supported, please provide your reciept and DM to ArchiTed!",
                 Footer = new() { Text = "It just costs $2!" },
             };
-            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder)/*.AddEmbed(new DiscordEmbedBuilder().WithUrl("https://www.patreon.com/ArchiDog1998"))*/);
+            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder));
             return false;
         }
         else

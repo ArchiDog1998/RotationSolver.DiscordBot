@@ -4,18 +4,15 @@ using DSharpPlus.SlashCommands.Attributes;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
-
-public class SupporterAttribute : BotChannelAttribute
+public class SupporterCheckAttribute(params ulong[] roleIds) : SlashCheckBaseAttribute
 {
     public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        if (!await base.ExecuteChecksAsync(ctx)) //Wrong channel.
-        {
-            return false;
-        }
-        else if (!ctx.Member.Roles.Any(r => r.Id == Config.SupporterRole)) //Worng role.
+        if (!ctx.Member.Roles.Any(r => roleIds.Contains(r.Id))) //Worng role.
         {
             await ctx.DeferAsync();
+
+            var roles = roleIds.Select(id => ctx.Guild.GetRole(id).Name);
 
             var builder = new DiscordEmbedBuilder()
             {
@@ -23,11 +20,11 @@ public class SupporterAttribute : BotChannelAttribute
                 Url = "https://ko-fi.com/B0B0IN5DX",
                 ImageUrl = "https://storage.ko-fi.com/cdn/brandasset/kofi_bg_tag_dark.png",
                 Color = DiscordColor.IndianRed,
-                Description = "You dont have the role Supporter!\n \n"
+                Description = $"You dont have any of the roles {string.Join(", ", roles)}!\n \n"
                     + "If you have supported, please provide your reciept and DM to ArchiTed!",
                 Footer = new() { Text = "It just costs $2!" },
             };
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(builder));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(builder).WithContent("https://www.patreon.com/ArchiDog1998"));
             return false;
         }
         else
@@ -40,15 +37,16 @@ public class SupporterAttribute : BotChannelAttribute
 [SlashCommandGroup("Supporter", "The commands for supporters")]
 public class SupporterCommands : ApplicationCommandModule
 {
-    [Supporter]
-    [SlashCooldown(1, 60, SlashCooldownBucketType.User)]
+    [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
+    [BotChannel]
+    [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Name", "Adds your name to the ingame plugin supporter list if you are one.")]
     public async Task SupporterName(InteractionContext ctx,
     [Option("DisplayName", "To display your name at the game plugin", true)] string name)
     {
         await ctx.DeferAsync();
 
-        SqlHelper.UpdateSupporterData(ctx.Member.Id, 0, string.Empty, name);
+        SqlHelper.UpdateSupporterData(ctx.Member.Id, string.Empty, name);
         await UpdateNames();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your name."));
@@ -83,8 +81,9 @@ public class SupporterCommands : ApplicationCommandModule
         }
     }
 
-    [Supporter]
-    [SlashCooldown(1, 60, SlashCooldownBucketType.User)]
+    [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
+    [BotChannel]
+    [SupporterCheck(Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Hash", "Adds your hash to the supporter list to access the plugins supporter-only features.")]
     public async Task SupporterHash(InteractionContext ctx,
     [Option("Hash", "That is shown in the Debug panel in the game.", true)] string hash)
@@ -97,7 +96,7 @@ public class SupporterCommands : ApplicationCommandModule
             return;
         }
 
-        SqlHelper.UpdateSupporterData(ctx.Member.Id, 0, hash, string.Empty);
+        SqlHelper.UpdateSupporterData(ctx.Member.Id, hash, string.Empty);
         await UpdateHashes();
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin after about 10 mins."));
     }
@@ -132,7 +131,8 @@ public class SupporterCommands : ApplicationCommandModule
         }
     }
 
-    [Supporter]
+    [BotChannel]
+    [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Info", "Get Your Information privately.")]
     public static async Task SupporterInfo(InteractionContext ctx)
     {

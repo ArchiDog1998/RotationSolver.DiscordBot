@@ -35,9 +35,9 @@ internal static class SqlHelper
         SetValues($"INSERT INTO public.\"GithubCommit\"(\"Sha\", \"Repo\") VALUES ('{sha}', {repoId});");
     }
 
-    public static void UpdateSupporterData(ulong id, int github, string hash, string name)
+    public static void UpdateSupporterData(ulong id, string hash, string name)
     {
-        SetValues($"CALL public.upsert_supporter({id}, {github}, {hash.GetValue()}, {name.GetValue()})");
+        SetValues($"CALL public.upsert_supporter({id}, {hash.GetValue()}, {name.GetValue()})");
     }
 
     private static string GetValue(this string str)

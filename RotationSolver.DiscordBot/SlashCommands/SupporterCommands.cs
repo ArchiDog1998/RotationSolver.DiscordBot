@@ -85,30 +85,6 @@ public class SupporterCommands : ApplicationCommandModule
 
     [Supporter]
     [SlashCooldown(1, 60, SlashCooldownBucketType.User)]
-    [SlashCommand("Github", "Adds your Github ID to the access list for Rotation Solver's supporter-only github page if you are.")]
-    public async Task SuppoterGithub(InteractionContext ctx,
-    [Option("GithubID", "Your Github username, full name, or email.", true)] string github)
-    {
-        await ctx.DeferAsync();
-
-        SqlHelper.GetGithub(ctx.Member.Id, out var githubs);
-        var oldName = githubs?.FirstOrDefault() ?? string.Empty;
-
-        var id = await GithubHelper.OnGithubChanged(oldName, github);
-
-        if (id == 0)
-        {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Failed to change your account. Maybe your data is the same to the previous one!"));
-        }
-        else
-        {
-            SqlHelper.UpdateSupporterData(ctx.Member.Id, id, string.Empty, string.Empty);
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your github account!"));
-        }
-    }
-
-    [Supporter]
-    [SlashCooldown(1, 60, SlashCooldownBucketType.User)]
     [SlashCommand("Hash", "Adds your hash to the supporter list to access the plugins supporter-only features.")]
     public async Task SupporterHash(InteractionContext ctx,
     [Option("Hash", "That is shown in the Debug panel in the game.", true)] string hash)
@@ -181,16 +157,6 @@ public class SupporterCommands : ApplicationCommandModule
             if (!string.IsNullOrEmpty(v))
             {
                 embedItem = embedItem.AddField("Display Name", v);
-            }
-        }
-
-        if (SqlHelper.GetGithub(id, out value) && value.Length != 0)
-        {
-            var v = value[0];
-
-            if (!string.IsNullOrEmpty(v))
-            {
-                embedItem = embedItem.AddField("Github", v);
             }
         }
 

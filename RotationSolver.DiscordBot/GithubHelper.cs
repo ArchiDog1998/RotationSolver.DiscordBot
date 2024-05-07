@@ -18,30 +18,6 @@ internal static class GithubHelper
         return await GitHubClient.Repository.GetAllContributors(UserName, "RotationSolver.Basic");
     }
 
-    internal static async Task<int> OnGithubChanged(string github, string newGithub)
-    {
-        if (github == newGithub) return 0;
-
-        if (!string.IsNullOrEmpty(github))
-        {
-            await GitHubClient.Repository.Collaborator.Delete(UserName, "RotationSolver.Basic", github);
-        }
-
-        if (!string.IsNullOrEmpty(newGithub))
-        {
-            try
-            {
-                var invite = await GitHubClient.Repository.Collaborator.Add(UserName, "RotationSolver.Basic", newGithub, new CollaboratorRequest("pull"));
-                return invite.Invitee.Id;
-            }
-            catch
-            {
-
-            }
-        }
-        return 0;
-    }
-
     internal delegate bool ModifyValueDelegate<T>(ref T value, out string commit);
 
     internal static async Task ModifyFile<T>(string repoName, string path, ModifyValueDelegate<T?> modifyFile)

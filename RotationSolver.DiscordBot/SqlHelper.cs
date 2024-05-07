@@ -82,11 +82,6 @@ internal static class SqlHelper
         return GetObjects($"SELECT \"Supporter\".\"Name\" FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
     }
 
-    public static bool GetGithub(ulong id, out string[] data)
-    {
-        return GetObjects($"SELECT \"Supporter\".\"Github\" FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
-    }
-
     public static string[] GetNames()
     {
         GetObjects<string>("SELECT * FROM public.\"GetSupportersName\"", out var result);

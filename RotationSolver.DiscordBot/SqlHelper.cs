@@ -106,7 +106,7 @@ internal static class SqlHelper
 
     private static bool GetObjects<T>(string cmd, out T[] array, Func<NpgsqlDataReader, T>? convert = null)
     {
-        convert ??= r => (T)Convert.ChangeType(r, typeof(T));
+        convert ??= r => (T)Convert.ChangeType(r[0], typeof(T));
 
         using var conenction = CreateConnection();
         conenction.Open();
@@ -123,9 +123,9 @@ internal static class SqlHelper
             {
                 result.Add(convert(reader));
             }
-            catch
+            catch(Exception ex)
             {
-
+                Console.WriteLine(ex.Message + "\n" + ex.StackTrace ?? string.Empty);
             }
         }
         array = [.. result];

@@ -4,14 +4,13 @@ using DSharpPlus.SlashCommands.Attributes;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
-public class SupporterCheckAttribute(params ulong[] roleIds) : SlashCheckBaseAttribute
+public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribute
 {
     public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        if (!ctx.Member.Roles.Any(r => roleIds.Contains(r.Id))) //Worng role.
+        if (! await base.ExecuteChecksAsync(ctx)) return false;
+        else if (!ctx.Member.Roles.Any(r => roleIds.Contains(r.Id))) //Worng role.
         {
-            await ctx.DeferAsync();
-
             var roles = roleIds.Select(id => ctx.Guild.GetRole(id).Name);
 
             var builder = new DiscordEmbedBuilder()
@@ -20,11 +19,11 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : SlashCheckBaseAtt
                 Url = "https://ko-fi.com/B0B0IN5DX",
                 ImageUrl = "https://storage.ko-fi.com/cdn/brandasset/kofi_bg_tag_dark.png",
                 Color = DiscordColor.IndianRed,
-                Description = $"You dont have any of the roles {string.Join(", ", roles)}!\n \n"
+                Description = $"Hi, {ctx.Member.Mention}! You dont have any of the roles {string.Join(", ", roles)}!\n \n"
                     + "If you have supported, please provide your reciept and DM to ArchiTed!",
                 Footer = new() { Text = "It just costs $2!" },
             };
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(builder).WithContent("https://www.patreon.com/ArchiDog1998"));
+            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder)/*.AddEmbed(new DiscordEmbedBuilder().WithUrl("https://www.patreon.com/ArchiDog1998"))*/);
             return false;
         }
         else
@@ -38,7 +37,6 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : SlashCheckBaseAtt
 public class SupporterCommands : ApplicationCommandModule
 {
     [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
-    [BotChannel]
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Name", "Adds your name to the ingame plugin supporter list if you are one.")]
     public async Task SupporterName(InteractionContext ctx,
@@ -82,7 +80,6 @@ public class SupporterCommands : ApplicationCommandModule
     }
 
     [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
-    [BotChannel]
     [SupporterCheck(Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Hash", "Adds your hash to the supporter list to access the plugins supporter-only features.")]
     public async Task SupporterHash(InteractionContext ctx,
@@ -131,7 +128,6 @@ public class SupporterCommands : ApplicationCommandModule
         }
     }
 
-    [BotChannel]
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Info", "Get Your Information privately.")]
     public static async Task SupporterInfo(InteractionContext ctx)
@@ -148,6 +144,7 @@ public class SupporterCommands : ApplicationCommandModule
         }
 
         var embedItem = new DiscordEmbedBuilder()
+            .WithTitle("Your Information in the Database.")
             .WithColor(DiscordColor.Blue);
 
         if (value.Length != 0)

@@ -157,6 +157,7 @@ public static partial class Service
 
     private static async Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs args)
     {
+        if (args.Guild == null) return;
         var member = await args.Guild.GetMemberAsync(args.Author.Id);
         if (member == null) return;
 

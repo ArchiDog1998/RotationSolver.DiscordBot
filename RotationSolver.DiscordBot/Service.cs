@@ -233,7 +233,22 @@ public static partial class Service
     {
         if (roles.Any(i => i == Config.SupporterRole))
         {
-            if (isAdd) // Send a kind message
+            if (isAdd)
+            {
+                var builder = new DiscordEmbedBuilder()
+                {
+                    Title = "**Thanks for your support!**",
+                    Color = DiscordColor.IndianRed,
+                    Description = $"**Hi {member.Mention}, Thanks for your support!**",
+                    Footer = new() { Text = "Thank you so much!" },
+                };
+
+                await member.SendMessageAsync(builder);
+            }
+        }
+        if(roles.Any(i => i is Config.KofiRole or Config.PatreonRole))
+        {
+            if (isAdd)
             {
                 SqlHelper.IsvalidSupporter(member.Id, true);
 
@@ -241,18 +256,19 @@ public static partial class Service
                 {
                     Title = "**Thanks for your support!**",
                     Color = DiscordColor.IndianRed,
-                    Description = $"**Hi {member.Mention}, Thanks for your support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporterhash` to enable your supporter-only features!",
+                    Description = $"**Hi {member.Mention}, Thanks for your support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporter hash` to enable your supporter-only features!",
                     Footer = new() { Text = "Thank you so much!" },
                 };
 
                 await member.SendMessageAsync(builder);
+
+                await SupporterCommands.UpdateNames();
+                await SupporterCommands.UpdateHashes();
             }
             else
             {
                 SqlHelper.IsvalidSupporter(member.Id, false);
             }
-            await SupporterCommands.UpdateNames();
-            await SupporterCommands.UpdateHashes();
         }
         if (roles.Any(i => i == Config.RotationDevRole)) //Rotation Dev.
         {

@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Xml.Linq;
 
 namespace RotationSolver.DiscordBot;
 
@@ -38,6 +39,10 @@ internal static class SqlHelper
     public static void UpdateSupporterData(ulong id, string hash, string name)
     {
         SetValues($"CALL public.upsert_supporter({id}, {hash.GetValue()}, {name.GetValue()})");
+        if (!string.IsNullOrEmpty(hash))
+        {
+            IsvalidSupporter(id, true);
+        }
     }
 
     private static string GetValue(this string str)

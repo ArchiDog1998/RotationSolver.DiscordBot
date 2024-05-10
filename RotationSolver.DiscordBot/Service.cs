@@ -47,16 +47,23 @@ public static partial class Service
 
             do
             {
-                foreach (var guild in Client.Guilds.Values)
+                try
                 {
-                    await UpdateContributorRoles(guild);
+                    foreach (var guild in Client.Guilds.Values)
+                    {
+                        await UpdateContributorRoles(guild);
+                    }
+                    var channel = await Client.GetChannelAsync(Config.GithubChannel);
+                    var embeds = await GithubHelper.GetCommitMessage();
+                    if (embeds.Length != 0)
+                    {
+                        var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbeds(embeds));
+                        await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+                    }
                 }
-                var channel = await Client.GetChannelAsync(Config.GithubChannel);
-                var embeds = await GithubHelper.GetCommitMessage();
-                if (embeds.Length != 0)
+                catch
                 {
-                    var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbeds(embeds));
-                    await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+
                 }
             }
             while (await timer.WaitForNextTickAsync());

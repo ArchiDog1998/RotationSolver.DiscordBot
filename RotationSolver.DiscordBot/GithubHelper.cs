@@ -104,7 +104,7 @@ internal static class GithubHelper
             var project = await GitHubClient.Repository.Get(id);
 
             List<Author> authorList = [];
-            List<string> labels = [];
+            SortedDictionary<string, List<string>> labels = [];
             int addition = 0, deletions = 0;
 
             foreach (var sha in grp.Select(i => i.Sha))
@@ -119,34 +119,53 @@ internal static class GithubHelper
                     authorList.Add(commit.Author);
                 }
 
-                var message = commit.Commit.Message.Split("\n");
-                var label = $"- {message.FirstOrDefault()} [Link]({commit.HtmlUrl})";
+                var message = commit.Commit.Message.Split("\n").FirstOrDefault();
 
-                if (message.Length > 1)
-                {
-                    var lt = message.ToList();
-                    lt.RemoveAt(0);
-                    label += "\n" + string.Join("\n", lt);
-                }
+                if (message == null) continue;
+                if (message.StartsWith("New translations")) continue;
+                if (message.StartsWith("Merge branch")) continue;
 
-                labels.Add(label);
+                var items = message.Split(':');
+                message = items.LastOrDefault() ?? message;
+
+                var key = items.Length == 2 ? RemapCommitType(items[0]) : "Others";
+
+                var label = $"- {message} [Link]({commit.HtmlUrl})";
+
+                if (!labels.TryGetValue(key, out var lt)) labels[key] = lt = [];
+                lt.Add(label);
 
                 addition += commit.Files.Sum(f => f.Additions);
                 deletions += commit.Files.Sum(f => f.Deletions);
             }
 
-            labels.Sort();
+            string body = string.Empty;
 
-            string body = string.Join("\n", labels);
+            foreach (var pair in labels)
+            {
+                body += $"### **{pair.Key}**\n" + string.Join("\n", pair.Value) + "\n";
+            }
 
             list.Add(new DiscordEmbedBuilder()
                 .WithTitle(project.Name)
                 .WithUrl(project.HtmlUrl)
                 .WithDescription(body)
+                .WithAuthor(project.Owner.Name, project.Owner.HtmlUrl, project.Owner.AvatarUrl)
                 .AddField("Additions", $"**+{addition}**", true)
                 .AddField("Deletions", $"**-{deletions}**", true)
                 .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));
         }
         return [.. list];
+    }
+
+    private static string RemapCommitType(string key)
+    {
+        return key.ToLower() switch
+        {
+            "feat" or "feat!" => "Features",
+            "fix" or "fix!" => "Bug Fixes",
+            "refactor" or "refactor!" => "Refactor",
+            _ => key,
+        };
     }
 }

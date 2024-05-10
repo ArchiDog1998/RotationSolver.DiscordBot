@@ -27,7 +27,7 @@ internal static class SqlHelper
             };
             return result;
         });
-        SetValues($"TRUNCATE public.\"GithubCommit\"");
+        //SetValues($"TRUNCATE public.\"GithubCommit\"");
         return result;
     }
 

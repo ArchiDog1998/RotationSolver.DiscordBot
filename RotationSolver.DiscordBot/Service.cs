@@ -35,39 +35,7 @@ public static partial class Service
         Client.ComponentInteractionCreated += Client_ComponentInteractionCreated;
 
         await Client.ConnectAsync(new("RS on FFXIV"));
-
-        _ = Task.Run(async () =>
-        {
-            var now = DateTime.UtcNow + TimeSpan.FromHours(10);
-            var span = TimeSpan.FromDays(1) - (now - now.Date);
-
-            await Task.Delay(span);
-
-            using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
-
-            do
-            {
-                try
-                {
-                    foreach (var guild in Client.Guilds.Values)
-                    {
-                        await UpdateContributorRoles(guild);
-                    }
-                    var channel = await Client.GetChannelAsync(Config.GithubChannel);
-                    var embeds = await GithubHelper.GetCommitMessage();
-                    if (embeds.Length != 0)
-                    {
-                        var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbeds(embeds));
-                        await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-            while (await timer.WaitForNextTickAsync());
-        });
+        DailyWork.Init();
     }
 
     private static async Task Client_MessageDeleted(DiscordClient sender, MessageDeleteEventArgs args)
@@ -141,23 +109,6 @@ public static partial class Service
         }
 
         await args.Message.DeleteAsync();
-    }
-
-    private static async Task UpdateContributorRoles(DiscordGuild guild)
-    {
-        var contributors = await GithubHelper.GetContributors();
-        foreach (var contributor in contributors)
-        {
-            if (!SqlHelper.GetIDFromGithub(contributor.Id, out var data)) continue;
-            if (data == null || data.Length == 0) continue;
-
-            var member = await guild.GetMemberAsync(data[0]);
-            if (member == null) continue;
-
-            if (member.Roles.Any(i => i.Id == Config.ContributerRole)) continue; //Contributer
-
-            await member.GrantRoleAsync(guild.GetRole(Config.ContributerRole));
-        }
     }
 
     private static async Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs args)

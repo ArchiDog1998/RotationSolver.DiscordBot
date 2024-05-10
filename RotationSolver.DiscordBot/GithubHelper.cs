@@ -95,6 +95,9 @@ internal static class GithubHelper
     {
         var list = new List<DiscordEmbed>();
         SqlHelper.GetAndClearCommits(out var data);
+
+        if (data == null || data.Length == 0) return [];
+
         foreach (var grp in data.GroupBy(i => i.Repo))
         {
             var id = grp.Key;

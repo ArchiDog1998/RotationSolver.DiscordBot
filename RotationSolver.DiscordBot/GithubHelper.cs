@@ -150,7 +150,7 @@ internal static class GithubHelper
                 .WithTitle(project.Name)
                 .WithUrl(project.HtmlUrl)
                 .WithDescription(body)
-                .WithAuthor(project.Owner.Name, project.Owner.HtmlUrl, project.Owner.AvatarUrl)
+                .WithAuthor(project.Owner.Login, project.Owner.HtmlUrl, project.Owner.AvatarUrl)
                 .AddField("Additions", $"**+{addition}**", true)
                 .AddField("Deletions", $"**-{deletions}**", true)
                 .AddField("Contributers", string.Join(", ", authorList.Select(a => $"[{a.Login}]({a.HtmlUrl})"))));

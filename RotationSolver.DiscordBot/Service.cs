@@ -388,7 +388,9 @@ public static partial class Service
             .WithDescription(body)
             .WithColor(DiscordColor.Black);
 
-        var message = await channel.SendMessageAsync(embedBuilder);
+        var role = channel.Guild.GetRole(Config.AnnouncementSubRole);
+
+        var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(role.Mention).AddEmbed(embedBuilder));
         await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
     }
 

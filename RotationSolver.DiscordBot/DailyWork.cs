@@ -10,15 +10,14 @@ internal class DailyWork
 {
     public static void Init()
     {
-
         _ = Task.Run(async () =>
         {
             var now = DateTime.UtcNow + TimeSpan.FromHours(10);
             var span = TimeSpan.FromDays(1) - (now - now.Date);
 
-            //await Task.Delay(span);
+            await Task.Delay(span);
 
-            using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
+            var timer = new PeriodicTimer(TimeSpan.FromDays(1));
 
             do
             {

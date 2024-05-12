@@ -379,7 +379,7 @@ public static partial class Service
         var login = token?["login"]?.ToString();
         var authorUrl = token?["html_url"]?.ToString();
 
-        var channel = await Client.GetChannelAsync(Config.AnnounceMent);
+        var channel = await Client.GetChannelAsync((name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false) ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
 
         var embedBuilder = new DiscordEmbedBuilder()
             .WithAuthor(login, authorUrl, icon)

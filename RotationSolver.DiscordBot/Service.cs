@@ -141,7 +141,7 @@ public static partial class Service
         if (main == null) return;
 
         await args.Message.DeleteAsync();
-        await member.SendMessageAsync($"Do NOT {main.Mention}! You are about to be timeout for **60** seconds. Your original message:");
+        await member.SendMessageAsync($"Do NOT {main.Mention}! You are timedout for **60** seconds. Your original message:");
         await member.SendMessageAsync(args.Message.Content);
 
         await member.TimeoutAsync(new DateTimeOffset(DateTime.UtcNow.AddSeconds(60)));
@@ -214,7 +214,7 @@ public static partial class Service
                 {
                     Title = "**Thanks for your support!**",
                     Color = DiscordColor.IndianRed,
-                    Description = $"**Hi {member.Mention}, Thanks for your support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporter hash` to enable your supporter-only features!",
+                    Description = $"**Hi {member.Mention}, Thank you for the support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporter hash` to enable your supporter-only features!",
                     Footer = new() { Text = "Thank you so much!" },
                 };
 
@@ -265,7 +265,7 @@ public static partial class Service
                 {
                     Title = "**You are Rotation Developer Now!**",
                     Color = DiscordColor.CornflowerBlue,
-                    Description = $"Hello {member.Mention}, thank you for being interested to make a rotation for Rotation Solver, you can use {channel.Mention} to recieve feedback from the other players that want to use your rotation if you wish to. Have fun!",
+                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. Have fun!",
                     Footer = new() { Text = "Come on! You are the best!" },
                 };
 
@@ -317,7 +317,7 @@ public static partial class Service
         var exception = args.Exception;
         if (exception is SlashExecutionChecksFailedException)
         {
-            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wait for less than 1min to use this command again!"));
+            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wait for 1 min to use this command again!"));
             return;
         }
 

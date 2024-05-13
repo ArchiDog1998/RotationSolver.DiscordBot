@@ -28,7 +28,7 @@ public class RotationDevRoleAttribute : SlashCheckBaseAttribute
     {
         if (!ctx.Member.Roles.Any(r => r.Id == Config.RotationDevRole)) //Wrong role.
         {
-            var message = await ctx.Channel.SendMessageAsync($"Sorry, {ctx.Member.Mention}. This feature can only be used in For **Rotation Dev**!");
+            var message = await ctx.Channel.SendMessageAsync($"Sorry, {ctx.Member.Mention}. This feature can only be used by **Rotation Dev**!");
 
             await Task.Delay(10000);
             await message.DeleteAsync();
@@ -59,17 +59,17 @@ public class GeneralCommands : ApplicationCommandModule
 
     [SlashCommand("sharefflogs", "Upload your ff logs if you want. (Without your dc name by default)")]
     public async Task ShareFFlogs(InteractionContext ctx,
-        [Option("logsPic", "The pics about your log")] DiscordAttachment pics,
-        [Option("author", "The author of this rotation")] DiscordUser? author = null,
-        [Option("rotationJobs", "The jobs of the rotation. It is better to use emoji.")] string? rotationjobs = null,
-        [Option("text", "The things you want to say to the author or the users")] string? text = null,
-        [Option("showYou", "Add your name to the message")] bool showYourName = false)
+        [Option("logsPic", "A picture of the log you want to show")] DiscordAttachment pics,
+        [Option("author", "The author of the rotation")] DiscordUser? author = null,
+        [Option("rotationJobs", "The jobs used in the picture that you're showing. It is preferable that you use emoji.")] string? rotationjobs = null,
+        [Option("text", "Any message that you want to say to the author or to other users")] string? text = null,
+        [Option("showYou", "Add your ingame name to the message if you want")] bool showYourName = false)
     {
         await ctx.DeferAsync();
 
         if (!pics.Width.HasValue)
         {
-            await ctx.Member.SendMessageAsync($"You have to post a fflog picture!");
+            await ctx.Member.SendMessageAsync($"You have to post a FFlogs picture!");
             await ctx.DeleteResponseAsync();
             return;
         }
@@ -77,7 +77,7 @@ public class GeneralCommands : ApplicationCommandModule
         var authorMember = author as DiscordMember;
         if (authorMember != null && !authorMember.Roles.Any(r => r.Id == Config.RotationDevRole))
         {
-            await ctx.Member.SendMessageAsync($"The author you chosen has to be the `Rotation Dev`!");
+            await ctx.Member.SendMessageAsync($"The author you chose has to be a `Rotation Dev`!");
             await ctx.DeleteResponseAsync();
             return;
         }
@@ -141,7 +141,7 @@ public class GeneralCommands : ApplicationCommandModule
     [RotationDevRole]
     [SlashCommand("pollforjobs", "Poll for jobs for helping you choose the job to develop.")]
     public async Task PollForJobs(InteractionContext ctx,
-        [Option("pollType", "The types for poll.")] PollType type,
+        [Option("pollType", "The type of poll.")] PollType type,
         [Option("days", "The days for polling.")]double days = 1)
     {
         await ctx.DeferAsync();
@@ -151,7 +151,7 @@ public class GeneralCommands : ApplicationCommandModule
         {
             Title = $"Poll For Jobs!",
             Color = DiscordColor.IndianRed,
-            Description = $"Which jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want below.",
+            Description = $"Which jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
             Timestamp = DateTime.UtcNow.AddDays(days),
         };
         var message = await channel.SendMessageAsync(builder);

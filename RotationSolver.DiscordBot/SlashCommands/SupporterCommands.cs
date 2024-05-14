@@ -23,7 +23,7 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
                     + "If you have supported, please provide your reciept and DM to ArchiTed!",
                 Footer = new() { Text = "It just costs $2!" },
             };
-            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder));
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(builder));
             return false;
         }
         else

@@ -12,10 +12,10 @@ public class BotChannelAttribute : SlashCheckBaseAttribute
     {
         if (ctx.Channel.Id != Config.BotChannel) //Wrong channel.
         {
-            var message = await ctx.Channel.SendMessageAsync($"Sorry, {ctx.Member.Mention}. This feature can only be used in {Config.BotChannelLink}!");
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Sorry, {ctx.Member.Mention}. This feature can only be used in {Config.BotChannelLink}!"));
 
             await Task.Delay(10000);
-            await message.DeleteAsync();
+            await ctx.DeleteResponseAsync();
             return false;
         }
         return true;
@@ -28,10 +28,10 @@ public class RotationDevRoleAttribute : SlashCheckBaseAttribute
     {
         if (!ctx.Member.Roles.Any(r => r.Id == Config.RotationDevRole)) //Wrong role.
         {
-            var message = await ctx.Channel.SendMessageAsync($"Sorry, {ctx.Member.Mention}. This feature can only be used in For **Rotation Dev**!");
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Sorry, {ctx.Member.Mention}. This feature can only be used in For **Rotation Dev**!"));
 
             await Task.Delay(10000);
-            await message.DeleteAsync();
+            await ctx.DeleteResponseAsync();
             return false;
         }
         return true;

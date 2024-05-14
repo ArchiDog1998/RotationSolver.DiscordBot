@@ -19,9 +19,9 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
                 Url = "https://www.patreon.com/ArchiDog1998",
                 ImageUrl = "https://c7.patreon.com/https%3A%2F%2Fwww.patreon.com%2F%2Fcreator-teaser-image%2F7803473/selector/%23creator-teaser%2C.png",
                 Color = DiscordColor.IndianRed,
-                Description = $"Hi, {ctx.Member.Mention}! You dont have any of the roles {string.Join(", ", roles)}!\n \n"
+                Description = $"Hi, {ctx.Member.Mention}! You dont have any of the following roles: {string.Join(", ", roles)}!\n \n"
                     + "If you have supported, please provide your reciept and DM to ArchiTed!",
-                Footer = new() { Text = "It just costs $2!" },
+                Footer = new() { Text = "It's just $2!" },
             };
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(builder));
             return false;
@@ -40,14 +40,14 @@ public class SupporterCommands : ApplicationCommandModule
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Name", "Adds your name to the ingame plugin supporter list if you are one.")]
     public async Task SupporterName(InteractionContext ctx,
-    [Option("DisplayName", "To display your name at the game plugin", true)] string name)
+    [Option("DisplayName", "Display your name in the game plugin", true)] string name)
     {
         await ctx.DeferAsync();
 
         SqlHelper.UpdateSupporterData(ctx.Member.Id, string.Empty, name);
         await UpdateNames();
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your name."));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your ingame display name."));
     }
 
     internal static async Task UpdateNames()
@@ -83,19 +83,19 @@ public class SupporterCommands : ApplicationCommandModule
     [SupporterCheck(Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Hash", "Adds your hash to the supporter list to access the plugins supporter-only features.")]
     public async Task SupporterHash(InteractionContext ctx,
-    [Option("Hash", "That is shown in the Debug panel in the game.", true)] string hash)
+    [Option("Hash", "That is shown in the Debug panel in the addon's ingame menu.", true)] string hash)
     {
         await ctx.DeferAsync();
 
         if (hash.Length != 24 || !hash.EndsWith("=="))
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Invalid hash! Please get it in the `Debug` panel!"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Invalid hash! Please get it from the `Debug` panel!"));
             return;
         }
 
         SqlHelper.UpdateSupporterData(ctx.Member.Id, hash, string.Empty);
         await UpdateHashes();
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin after about 10 mins."));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin in about 10 mins."));
     }
 
     internal static async Task UpdateHashes()
@@ -129,7 +129,7 @@ public class SupporterCommands : ApplicationCommandModule
     }
 
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
-    [SlashCommand("Info", "Get Your Information privately.")]
+    [SlashCommand("Info", "Get your information privately in a DM.")]
     public static async Task SupporterInfo(InteractionContext ctx)
     {
         await ctx.DeferAsync();
@@ -139,12 +139,12 @@ public class SupporterCommands : ApplicationCommandModule
 
         if (!hasData)
         {
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Didn't find your data! Please add your infomation!"));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Didn't find your data! Please add your information first to the database!"));
             return;
         }
 
         var embedItem = new DiscordEmbedBuilder()
-            .WithTitle("Your Information in the Database.")
+            .WithTitle("Your Information in the database.")
             .WithColor(DiscordColor.Blue);
 
         if (value.Length != 0)

@@ -164,7 +164,8 @@ internal static class GithubHelper
         {
             "feat" or "feat!" => "Features",
             "fix" or "fix!" => "Bug Fixes",
-            "refactor" or "refactor!" => "Refactor",
+            "refactor" or "refactor!" => "Refactors",
+            "docs" => "Documents",
             _ => key,
         };
     }

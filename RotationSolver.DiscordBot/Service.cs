@@ -317,7 +317,7 @@ public static partial class Service
         var exception = args.Exception;
         if (exception is SlashExecutionChecksFailedException)
         {
-            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wait for 1 min to use this command again!"));
+            //await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Wait for 1 min to use this command again!"));
             return;
         }
 

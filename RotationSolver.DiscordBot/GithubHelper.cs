@@ -79,15 +79,23 @@ internal static class GithubHelper
 
     internal static void SendGithubPush(string s)
     {
-        var obj = JObject.Parse(s);
-        var token = obj["repository"];
-        if (token == null) return;
-
-        var id = long.Parse(token["id"]!.ToString());
-        foreach (var commit in (JArray)obj["commits"]!)
+        try
         {
-            var sha = commit["id"]!.ToString();
-            SqlHelper.InsertGithubCommit(sha, id);
+            var obj = JObject.Parse(s);
+            var token = obj["repository"];
+            if (token == null) return;
+
+            var id = long.Parse(token["id"]!.ToString());
+            foreach (var commit in (JArray)obj["commits"]!)
+            {
+                var sha = commit["id"]!.ToString();
+                SqlHelper.InsertGithubCommit(sha, id);
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            return;
         }
     }
 

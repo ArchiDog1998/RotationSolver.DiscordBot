@@ -365,45 +365,61 @@ public static partial class Service
 
     internal static async void SendGithubPublish(string s)
     {
-        var obj = JObject.Parse(s);
-        if (obj["action"]?.ToString() != "published") return;
-        var token = obj["release"];
-        if (token == null) return;
+        try
+        {
+            var obj = JObject.Parse(s);
+            if (obj["action"]?.ToString() != "published") return;
+            var token = obj["release"];
+            if (token == null) return;
 
-        var url = token["html_url"]?.ToString();
-        var name = token["name"]?.ToString();
-        var body = token["body"]?.ToString();
+            var url = token["html_url"]?.ToString();
+            var name = token["name"]?.ToString();
+            var body = token["body"]?.ToString();
 
-        token = token["author"];
-        var icon = token?["avatar_url"]?.ToString();
-        var login = token?["login"]?.ToString();
-        var authorUrl = token?["html_url"]?.ToString();
+            token = token["author"];
+            var icon = token?["avatar_url"]?.ToString();
+            var login = token?["login"]?.ToString();
+            var authorUrl = token?["html_url"]?.ToString();
 
-        var channel = await Client.GetChannelAsync((name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false) ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
+            var channel = await Client.GetChannelAsync((name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false) ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
 
-        var embedBuilder = new DiscordEmbedBuilder()
-            .WithAuthor(login, authorUrl, icon)
-            .WithTitle($"**{name} Released!**")
-            .WithUrl(url)
-            .WithDescription(body)
-            .WithColor(DiscordColor.Black);
+            var embedBuilder = new DiscordEmbedBuilder()
+                .WithAuthor(login, authorUrl, icon)
+                .WithTitle($"**{name} Released!**")
+                .WithUrl(url)
+                .WithDescription(body)
+                .WithColor(DiscordColor.Black);
 
-        var role = channel.Guild.GetRole(Config.AnnouncementSubRole);
+            var role = channel.Guild.GetRole(Config.AnnouncementSubRole);
 
-        var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(role.Mention).AddEmbed(embedBuilder));
-        await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+            var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(role.Mention).AddEmbed(embedBuilder));
+            await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            return;
+        }
     }
 
     internal static async void SendKofi(string s)
     {
-        s = HttpUtility.UrlDecode(s[5..]);
-        var obj = JObject.Parse(s);
-        var name = obj["from_name"]?.ToString();
-        var amount = obj["amount"]?.ToString();
-        var currency = obj["currency"]?.ToString();
+        try
+        {
+            s = HttpUtility.UrlDecode(s[5..]);
+            var obj = JObject.Parse(s);
+            var name = obj["from_name"]?.ToString();
+            var amount = obj["amount"]?.ToString();
+            var currency = obj["currency"]?.ToString();
 
-        var channel = await Client.GetChannelAsync(Config.KofiChannel);
+            var channel = await Client.GetChannelAsync(Config.KofiChannel);
 
-        await channel.SendMessageAsync($"Thank you **{name}** for donating {currency} {amount}! :sparkling_heart:");
+            await channel.SendMessageAsync($"Thank you **{name}** for donating {currency} {amount}! :sparkling_heart:");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            return;
+        }
     }
 }

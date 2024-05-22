@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RotationSolver.DiscordBot.SlashCommands;
 using System.Xml.Linq;
 
 namespace RotationSolver.DiscordBot;
@@ -72,11 +73,6 @@ internal static class SqlHelper
         SetValues($"CALL public.isvalid_supporter({id}, {valid})");
     }
 
-    public static bool GetIDFromGithub(int github, out ulong[] data)
-    {
-        return GetObjects($"SELECT \"Supporter\".\"DiscordID\" FROM public.\"Supporter\" WHERE \"Github\" = {github}", out data);
-    }
-
     public static bool GetHash(ulong id, out string[] data)
     {
         return GetObjects($"SELECT unnest(\"Supporter\".\"Hashes\") FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
@@ -85,6 +81,15 @@ internal static class SqlHelper
     public static bool GetName(ulong id, out string[] data)
     {
         return GetObjects($"SELECT \"Supporter\".\"Name\" FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
+    }
+
+    public static async Task InitName(ulong id, string name)
+    {
+        if (!GetName(id, out var names) || names.Length == 0 || string.IsNullOrEmpty(names[0]))
+        {
+            UpdateSupporterData(id, string.Empty, name);
+            await SupporterCommands.UpdateNames();
+        }
     }
 
     public static string[] GetNames()

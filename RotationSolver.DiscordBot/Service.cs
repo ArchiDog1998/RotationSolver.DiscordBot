@@ -5,6 +5,7 @@ using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
 using RotationSolver.DiscordBot.SlashCommands;
 using System.Web;
+using System.Xml.Linq;
 
 namespace RotationSolver.DiscordBot;
 
@@ -202,9 +203,10 @@ public static partial class Service
                 };
 
                 await member.SendMessageAsync(builder);
+                await SqlHelper.InitName(member.Id, member.DisplayName);
             }
         }
-        if(roles.Any(i => i is Config.KofiRole or Config.PatreonRole))
+        if (roles.Any(i => i is Config.KofiRole or Config.PatreonRole))
         {
             if (isAdd)
             {
@@ -220,8 +222,8 @@ public static partial class Service
 
                 await member.SendMessageAsync(builder);
 
-                await SupporterCommands.UpdateNames();
                 await SupporterCommands.UpdateHashes();
+                await SqlHelper.InitName(member.Id, member.DisplayName);
             }
             else
             {

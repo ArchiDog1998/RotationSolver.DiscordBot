@@ -265,7 +265,7 @@ public static partial class Service
                 {
                     Title = "**You are Rotation Developer Now!**",
                     Color = DiscordColor.CornflowerBlue,
-                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. Have fun!",
+                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. \nYou'd better to add the `Download Link` of your libraries to the `Post Guidelines`!\nHave fun!",
                     Footer = new() { Text = "Come on! You are the best!" },
                 };
 

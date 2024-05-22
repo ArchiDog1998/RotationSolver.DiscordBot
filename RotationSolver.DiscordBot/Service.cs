@@ -256,6 +256,8 @@ public static partial class Service
                     channel = await guild.CreateChannelAsync($"🌱┃{member.DisplayName} Rotations", ChannelType.GuildForum, parent, $"Talk about everything about the rotations from {member.Mention}!", overwrites: [p]);
 
                     SqlHelper.UpdateRotationDevChannel(member.Id, channel.Id);
+
+                    await guild.GetChannel(Config.RotationAnnounceMentChannel).ModifyPositionAsync(0);
                 }
                 else
                 {

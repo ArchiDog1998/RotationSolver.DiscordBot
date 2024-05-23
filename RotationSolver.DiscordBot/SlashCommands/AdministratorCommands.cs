@@ -20,9 +20,16 @@ internal class AdministratorCommands : ApplicationCommandModule
 
         var item = Resource.DutyAndImage.MinBy(i => LevenshteinDistance(i.Item1.ToLower(), dutyName.ToLower()));
 
-        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## {item.Item1}\n{description}";
-
         var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timeStamp);
+
+        var now = DateTime.UtcNow.AddMinutes(10);
+        if (dateTime < now)
+        {
+            dateTime = now;
+            timeStamp = new DateTimeOffset(dateTime).ToUnixTimeSeconds();
+        }
+
+        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## {item.Item1}\n{description}";
 
         var embed = new DiscordEmbedBuilder()
             .WithTitle(EventHander.EventTittle)

@@ -25,6 +25,9 @@ public static partial class Service
         var slashCommands = Client.UseSlashCommands();
         slashCommands.RegisterCommands<GeneralCommands>();
         slashCommands.RegisterCommands<SupporterCommands>();
+        slashCommands.RegisterCommands<AdministratorCommands>();
+        slashCommands.RegisterCommands<AplicationCommand>();
+
         slashCommands.SlashCommandErrored += SlashCommands_SlashCommandErrored;
 
         Client.GuildMemberRemoved += Client_GuildMemberRemoved;
@@ -34,6 +37,7 @@ public static partial class Service
         Client.ComponentInteractionCreated += Client_ComponentInteractionCreated;
 
         UnkownHander.Init();
+        EventHander.Init();
 
         await Client.ConnectAsync(new("RS on FFXIV"));
         DailyWork.Init();
@@ -45,7 +49,7 @@ public static partial class Service
         if (channel == null) return;
 
         var author = args.Message.Author;
-        if (author.IsBot) return;
+        if (author == null || author.IsBot) return;
         var time = args.Message.EditedTimestamp ?? args.Message.CreationTimestamp;
 
         var embed = new DiscordEmbedBuilder()

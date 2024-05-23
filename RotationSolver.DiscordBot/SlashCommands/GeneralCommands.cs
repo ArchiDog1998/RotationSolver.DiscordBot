@@ -49,14 +49,6 @@ public class GeneralCommands : ApplicationCommandModule
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Pet the dear {ctx.Member.Mention}!"));
     }
 
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "Pet Me")]
-    public async Task PetMenu(ContextMenuContext ctx)
-    {
-        await ctx.DeferAsync();
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{ctx.Member.Mention} pets the dear {ctx.TargetMember.Mention}!"));
-    }
-
     [SlashCommand("sharefflogs", "Upload your ff logs if you want. (Without your dc name by default)")]
     public async Task ShareFFlogs(InteractionContext ctx,
         [Option("logsPic", "A picture of the log you want to show")] DiscordAttachment pics,

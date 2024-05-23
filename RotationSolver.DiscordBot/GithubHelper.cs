@@ -174,6 +174,7 @@ internal static class GithubHelper
             "fix" or "fix!" => "Bug Fixes",
             "refactor" or "refactor!" => "Refactors",
             "docs" => "Documents",
+            "style" => "Code Style",
             _ => key,
         };
     }

@@ -29,7 +29,15 @@ internal class AdministratorCommands : ApplicationCommandModule
             timeStamp = new DateTimeOffset(dateTime).ToUnixTimeSeconds();
         }
 
-        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## [{item.Item1}](https://garlandtools.org/db/#instance/{item.Item3})\n{description}";
+        var name = item.Item1;
+
+        if (!string.IsNullOrEmpty(link))
+        {
+            name = $"[{name}]({link})";
+        }
+
+        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## {name}\n{description}";
+
 
         var embed = new DiscordEmbedBuilder()
             .WithTitle(EventHander.EventTittle)
@@ -45,11 +53,6 @@ internal class AdministratorCommands : ApplicationCommandModule
         {
             var lead = thumbnailId / 1000;
             embed = embed.WithImageUrl($"https://xivapi.com/i/{lead:D3}000/{thumbnailId:D6}_hr1.png");
-        }
-
-        if(!string.IsNullOrEmpty(link))
-        {
-            embed = embed.WithUrl(link);
         }
 
         await channel.SendMessageAsync(new DiscordMessageBuilder()

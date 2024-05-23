@@ -29,7 +29,7 @@ internal class AdministratorCommands : ApplicationCommandModule
             timeStamp = new DateTimeOffset(dateTime).ToUnixTimeSeconds();
         }
 
-        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## {item.Item1}\n{description}";
+        description = $"<t:{timeStamp}:F> <t:{timeStamp}:R>\n## [{item.Item1}](https://garlandtools.org/db/#instance/{item.Item3})\n{description}";
 
         var embed = new DiscordEmbedBuilder()
             .WithTitle(EventHander.EventTittle)

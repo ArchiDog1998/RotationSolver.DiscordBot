@@ -46,6 +46,21 @@ internal static class SqlHelper
         }
     }
 
+    public static void InsertIssueData(ulong threadId, ulong messageId)
+    {
+        SetValues($"INSERT INTO public.\"Issues\"(\"ThreadID\", \"MessageID\")VALUES ({threadId}, {messageId});");
+    }
+
+    public static bool GetIssueData(ulong id, out ulong[] data)
+    {
+        return GetObjects($"SELECT \"MessageID\" FROM public.\"Issues\" WHERE \"ThreadID\" = {id};", out data);
+    }
+
+    public static void DeleteIssueData(ulong id)
+    {
+        GetObjects<ulong>($"DELETE FROM public.\"Issues\" WHERE \"ThreadID\" = {id};", out _);
+    }
+
     private static string GetValue(this string str)
     {
         if (string.IsNullOrEmpty(str))

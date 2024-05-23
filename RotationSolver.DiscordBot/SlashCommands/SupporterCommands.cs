@@ -40,7 +40,7 @@ public class SupporterCommands : ApplicationCommandModule
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Name", "Adds your name to the ingame plugin supporter list if you are one.")]
     public async Task SupporterName(InteractionContext ctx,
-    [Option("DisplayName", "Display your name in the game plugin", true)] string name)
+    [Option("DisplayName", "Display your name in the game plugin")] string name)
     {
         await ctx.DeferAsync();
 
@@ -83,7 +83,7 @@ public class SupporterCommands : ApplicationCommandModule
     [SupporterCheck(Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Hash", "Adds your hash to the supporter list to access the plugins supporter-only features.")]
     public async Task SupporterHash(InteractionContext ctx,
-    [Option("Hash", "That is shown in the Debug panel in the addon's ingame menu.", true)] string hash)
+    [Option("Hash", "That is shown in the Debug panel in the addon's ingame menu.")] string hash)
     {
         await ctx.DeferAsync();
 

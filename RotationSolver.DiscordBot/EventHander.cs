@@ -160,7 +160,7 @@ internal static class EventHander
     private static bool IsMessageValid(DiscordMessage message)
     {
         if (message.Author?.Id != Service.Client.CurrentUser.Id) return false;
-        if (message.Channel.Id != Config.HappyBunnyChannel) return false;
+        if (message.Channel.Id != Config.HappyBunnyEventChannel) return false;
         if (message.Embeds.Count == 0) return false;
         var embed = message.Embeds[0];
 

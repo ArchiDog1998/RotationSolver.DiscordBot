@@ -25,7 +25,7 @@ public static partial class Service
         var slashCommands = Client.UseSlashCommands();
         slashCommands.RegisterCommands<GeneralCommands>();
         slashCommands.RegisterCommands<SupporterCommands>();
-        slashCommands.RegisterCommands<AdministratorCommands>();
+        slashCommands.RegisterCommands<BunnyCommands>();
         slashCommands.RegisterCommands<AplicationCommand>();
 
         slashCommands.SlashCommandErrored += SlashCommands_SlashCommandErrored;

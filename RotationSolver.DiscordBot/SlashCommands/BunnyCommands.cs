@@ -3,9 +3,25 @@ using DSharpPlus.SlashCommands;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
-[SlashCommandGroup("Admin", "The commands for administrators")]
-[SlashCommandPermissions(DSharpPlus.Permissions.Administrator)]
-internal class AdministratorCommands : ApplicationCommandModule
+public class HappyBunnyChannelAttribute : SlashCheckBaseAttribute
+{
+    public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx)
+    {
+        if (ctx.Channel.Id != Config.HappyBunnyChannel) //Wrong channel.
+        {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Sorry, {ctx.Member.Mention}. This feature can only be used in {Config.HappyBunnyChannelLink}!"));
+
+            await Task.Delay(10000);
+            await ctx.DeleteResponseAsync();
+            return false;
+        }
+        return true;
+    }
+}
+
+[SlashCommandGroup("Bunny", "The commands for administrators")]
+[HappyBunnyChannel]
+internal class BunnyCommands : ApplicationCommandModule
 {
     public enum PartyType
     {

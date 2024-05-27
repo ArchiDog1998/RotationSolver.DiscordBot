@@ -125,7 +125,7 @@ internal class BunnyCommands : ApplicationCommandModule
             await channel.SendMessageAsync($"Thank you for participating in the event **{name}**! Hope you had a great time!\n{chocen}");
             await channel.DeleteMessageAsync(newMessage);
         }
-        else
+        else if(!string.IsNullOrEmpty(chocen))
         {
             await channel.SendMessageAsync($"Because there are not enough people, the event **{name}** is canceled. Thank you for your participation.\n{chocen}");
         }
@@ -139,6 +139,7 @@ internal class BunnyCommands : ApplicationCommandModule
         chocen = string.Empty;
         if(message.Embeds.Count == 0) return false;
         var fields = message.Embeds[0].Fields;
+        if (fields == null || !fields.Any()) return false;
         chocen = string.Join(", ", fields.SelectMany(i => i.Value.Split("\n")));
 
         switch (type)

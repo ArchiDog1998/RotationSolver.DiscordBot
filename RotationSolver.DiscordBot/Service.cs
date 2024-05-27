@@ -141,15 +141,9 @@ public static partial class Service
 
     private static async Task DontAtMe(MessageCreateEventArgs args, DiscordMember member)
     {
-        if (args.Message.ReferencedMessage != null) return;
-        var main = args.MentionedUsers.FirstOrDefault(u => u.Id == Config.ArchiDiscordID);
-        if (main == null) return;
-
-        await args.Message.DeleteAsync();
-        await member.SendMessageAsync($"Do NOT {main.Mention}! You are timedout for **60** seconds. Your original message:");
-        await member.SendMessageAsync(args.Message.Content);
-
-        await member.TimeoutAsync(new DateTimeOffset(DateTime.UtcNow.AddSeconds(60)));
+        var message = await args.Channel.GetMessageAsync(args.Message.Id);
+        if (message.ReferencedMessage != null) return;
+        await AplicationCommand.DeleteTimeoutMessage(message);
     }
 
     internal static async Task CanViewChannel(DiscordChannel channel, bool canView)

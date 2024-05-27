@@ -18,16 +18,25 @@ internal class AplicationCommand : ApplicationCommandModule
     [ContextMenu(ApplicationCommandType.MessageContextMenu, "Don't At Me")]
     public async Task DontAtMe(ContextMenuContext ctx)
     {
-        var main = ctx.TargetMessage.MentionedUsers.FirstOrDefault(u => u.Id == Config.ArchiDiscordID);
+        await ctx.DeferAsync();
+
+        var message = await ctx.Channel.GetMessageAsync(ctx.TargetMessage.Id);
+        await DeleteTimeoutMessage(message);
 
         await ctx.DeleteResponseAsync();
+    }
 
+    public static async Task DeleteTimeoutMessage(DiscordMessage message)
+    {
+        var member = message.Author as DiscordMember;
+        if (member == null) return;
+
+        var main = message.MentionedUsers.FirstOrDefault(u => u.Id == Config.ArchiDiscordID);
         if (main == null) return;
 
-        await ctx.TargetMessage.DeleteAsync();
-        await ctx.TargetMember.SendMessageAsync($"Do NOT {main.Mention}! You are timedout for **60** seconds. Your original message:");
-        await ctx.TargetMember.SendMessageAsync(ctx.TargetMessage.Content);
-
-        await ctx.TargetMember.TimeoutAsync(new DateTimeOffset(DateTime.UtcNow.AddSeconds(60)));
+        await message.DeleteAsync();
+        await member.SendMessageAsync($"Do NOT {main.Mention}! You are timedout for **60** seconds. Your original message:");
+        await member.SendMessageAsync(message.Content);
+        await member.TimeoutAsync(new DateTimeOffset(DateTime.UtcNow.AddSeconds(60)));
     }
 }

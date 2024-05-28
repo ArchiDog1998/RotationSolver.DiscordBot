@@ -286,4 +286,33 @@ public static partial class Service
             return;
         }
     }
+
+    internal static async void SendPatreon(string s)
+    {
+        try
+        {
+            var obj = JObject.Parse(s);
+            var data = obj["data"];
+            if (data is null) return;
+
+            if (data["type"]?.ToString() is not "member") return;
+
+            var attr = data["attributes"];
+            if (attr is null) return;
+
+            var name = attr["full_name"]?.ToString();
+            var amount = double.Parse(attr["pledge_amount_cents"]?.ToString() ?? "0");
+            amount /= 100;
+            var currency = attr["campaign_currency"]?.ToString();
+
+            var channel = await Client.GetChannelAsync(Config.KofiChannel);
+
+            await channel.SendMessageAsync($"Thank you **{name}** for donating {currency} {amount:f2}! :sparkling_heart:");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            return;
+        }
+    }
 }

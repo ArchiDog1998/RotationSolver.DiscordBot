@@ -4,10 +4,8 @@ namespace RotationSolver.DiscordBot;
 internal class Listener : IDisposable
 {
     private readonly HttpListener _listener;
-    private readonly Action<string> _actStr;
-    public Listener(int port, Action<string> actStr)
+    public Listener(int port)
     {
-        _actStr = actStr;
         _listener = new();
         _listener.Prefixes.Add($"http://*:{port}/");
         _listener.Start();
@@ -30,10 +28,29 @@ internal class Listener : IDisposable
         {
             using var body = request.InputStream;
             using var reader = new StreamReader(body, request.ContentEncoding);
+            var contentStr = reader.ReadToEnd();
+            var path = request.Url?.AbsolutePath ?? string.Empty;
 
             try
             {
-                _actStr(reader.ReadToEnd());
+                switch (path)
+                {
+                    case "/githubPublish":
+                        Service.SendGithubPublish(contentStr);
+                        break;
+
+                    case "/githubPush":
+                        GithubHelper.SendGithubPush(contentStr);
+                        break;
+
+                    case "/kofi":
+                        Service.SendKofi(contentStr);
+                        break;
+
+                    case "/patreon":
+                        Service.SendPatreon(contentStr);
+                        break;
+                }
             }
             catch(Exception ex) 
             {

@@ -302,8 +302,13 @@ public static partial class Service
 
             var name = attr["full_name"]?.ToString();
             var amount = double.Parse(attr["pledge_amount_cents"]?.ToString() ?? "0");
+
+            if (amount == 0) return;
+
             amount /= 100;
             var currency = attr["campaign_currency"]?.ToString();
+
+            if (string.IsNullOrEmpty(currency)) return;
 
             var channel = await Client.GetChannelAsync(Config.KofiChannel);
 

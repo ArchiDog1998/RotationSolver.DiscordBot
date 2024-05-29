@@ -113,7 +113,7 @@ internal static class UnkownHander
                 {
                     Title = "**Thanks for your support!**",
                     Color = DiscordColor.IndianRed,
-                    Description = $"**Hi {member.Mention}, Thanks for your support!**",
+                    Description = $"**Hi {member.Mention}, Thanks for your support!**\nYou can go {Config.BotChannelLink} and use `/supporter name` to change your display name in the supporter list in the plugin!",
                     Footer = new() { Text = "Thank you so much!" },
                 };
 
@@ -184,9 +184,11 @@ internal static class UnkownHander
                 {
                     Title = "**You are Rotation Developer Now!**",
                     Color = DiscordColor.CornflowerBlue,
-                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. \nYou'd better to add the `Download Link` of your libraries to the `Post Guidelines`!\nHave fun!",
+                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. \n\nYou'd better to add the `Download Link` of your libraries to the `Post Guidelines`!\nYou can also add the [webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks) to your repo.\n{Config.PublishLink} for release.\n {Config.PushLink} for push.\nHave fun!",
                     Footer = new() { Text = "Come on! You are the best!" },
-                };
+                }
+                .WithThumbnail("https://raw.githubusercontent.com/ArchiDog1998/RotationSolver/main/Images/Logo.png");
+
 
                 await member.SendMessageAsync(builder);
             }

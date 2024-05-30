@@ -31,6 +31,7 @@ public static partial class Service
         slashCommands.SlashCommandErrored += SlashCommands_SlashCommandErrored;
 
         Client.GuildMemberRemoved += Client_GuildMemberRemoved;
+        Client.GuildMemberAdded += Client_GuildMemberAdded;
         Client.MessageCreated += Client_MessageCreated;
         Client.MessageUpdated += Client_MessageUpdated;
         Client.MessageDeleted += Client_MessageDeleted;
@@ -41,6 +42,52 @@ public static partial class Service
 
         await Client.ConnectAsync(new("RS on FFXIV"));
         DailyWork.Init();
+    }
+
+    private static async Task Client_GuildMemberAdded(DiscordClient sender, GuildMemberAddEventArgs args)
+    {
+        var member = args.Member;
+        var roles = member.Roles.Select(i => i.Id);
+        if (roles.Any(i => i == Config.SupporterRole))
+        {
+            await SendSupportThank(member);
+        }
+        if (roles.Any(i => i is Config.KofiRole or Config.PatreonRole))
+        {
+            await SendSubscribeThank(member);
+        }
+    }
+
+    internal static async Task SendSupportThank(DiscordMember member)
+    {
+        var builder = new DiscordEmbedBuilder()
+        {
+            Title = "**Thanks for your support!**",
+            Color = DiscordColor.IndianRed,
+            Description = $"**Hi {member.Mention}, Thanks for your support!**\nYou can go {Config.BotChannelLink} and use `/supporter name` to change your display name in the supporter list in the plugin!",
+            Footer = new() { Text = "Thank you so much!" },
+        };
+
+        await member.SendMessageAsync(builder);
+        await SqlHelper.InitName(member.Id, member.DisplayName);
+    }
+
+    internal static async Task SendSubscribeThank(DiscordMember member)
+    {
+        SqlHelper.IsvalidSupporter(member.Id, true);
+
+        var builder = new DiscordEmbedBuilder()
+        {
+            Title = "**Thanks for your support!**",
+            Color = DiscordColor.IndianRed,
+            Description = $"**Hi {member.Mention}, Thank you for the support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporter hash` to enable your supporter-only features!",
+            Footer = new() { Text = "Thank you so much!" },
+        };
+
+        await member.SendMessageAsync(builder);
+
+        await SupporterCommands.UpdateHashes();
+        await SqlHelper.InitName(member.Id, member.DisplayName);
     }
 
     private static async Task Client_MessageDeleted(DiscordClient sender, MessageDeleteEventArgs args)

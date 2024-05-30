@@ -109,36 +109,14 @@ internal static class UnkownHander
         {
             if (isAdd)
             {
-                var builder = new DiscordEmbedBuilder()
-                {
-                    Title = "**Thanks for your support!**",
-                    Color = DiscordColor.IndianRed,
-                    Description = $"**Hi {member.Mention}, Thanks for your support!**\nYou can go {Config.BotChannelLink} and use `/supporter name` to change your display name in the supporter list in the plugin!",
-                    Footer = new() { Text = "Thank you so much!" },
-                };
-
-                await member.SendMessageAsync(builder);
-                await SqlHelper.InitName(member.Id, member.DisplayName);
+                await Service.SendSupportThank(member);
             }
         }
         if (roles.Any(i => i is Config.KofiRole or Config.PatreonRole))
         {
             if (isAdd)
             {
-                SqlHelper.IsvalidSupporter(member.Id, true);
-
-                var builder = new DiscordEmbedBuilder()
-                {
-                    Title = "**Thanks for your support!**",
-                    Color = DiscordColor.IndianRed,
-                    Description = $"**Hi {member.Mention}, Thank you for the support!**\nPlease don't forget to go {Config.BotChannelLink} and use `/supporter hash` to enable your supporter-only features!",
-                    Footer = new() { Text = "Thank you so much!" },
-                };
-
-                await member.SendMessageAsync(builder);
-
-                await SupporterCommands.UpdateHashes();
-                await SqlHelper.InitName(member.Id, member.DisplayName);
+                await Service.SendSubscribeThank(member);
             }
             else
             {

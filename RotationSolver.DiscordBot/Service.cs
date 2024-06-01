@@ -274,23 +274,31 @@ public static partial class Service
         }
     }
 
+    private const int MaxLength = 2000;
     internal static async void SendGithubPublish(string s)
     {
         try
         {
             var obj = JObject.Parse(s);
             if (obj["action"]?.ToString() != "published") return;
-            var token = obj["release"];
-            if (token == null) return;
 
-            var url = token["html_url"]?.ToString();
-            var name = token["name"]?.ToString();
-            var body = token["body"]?.ToString();
+            var repository = obj["repository"];
+            if (repository == null) return;
 
-            token = token["author"];
-            var icon = token?["avatar_url"]?.ToString();
-            var login = token?["login"]?.ToString();
-            var authorUrl = token?["html_url"]?.ToString();
+            var url = repository["html_url"]?.ToString();
+            var name = repository["name"]?.ToString();
+            var body = obj["release"]?["body"]?.ToString();
+
+            if (body != null)
+            {
+                var lines = body.Split('\n');
+                body = string.Join('\n', lines.Take(30));
+            }
+
+            var owner = repository["owner"];
+            var icon = owner?["avatar_url"]?.ToString();
+            var login = owner?["login"]?.ToString();
+            var authorUrl = owner?["html_url"]?.ToString();
 
             var channel = await Client.GetChannelAsync((name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false) ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
 

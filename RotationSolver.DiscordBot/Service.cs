@@ -46,7 +46,7 @@ public static partial class Service
 
     private static async Task Client_GuildMemberAdded(DiscordClient sender, GuildMemberAddEventArgs args)
     {
-        var member = args.Member;
+        var member = await args.Guild.GetMemberAsync(args.Member.Id);
         var roles = member.Roles.Select(i => i.Id);
         if (roles.Any(i => i == Config.SupporterRole))
         {
@@ -274,7 +274,6 @@ public static partial class Service
         }
     }
 
-    private const int MaxLength = 2000;
     internal static async void SendGithubPublish(string s)
     {
         try

@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using DSharpPlus.Entities;
+using Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
 using System.Xml.Linq;
 
@@ -98,8 +99,10 @@ internal static class SqlHelper
         return GetObjects($"SELECT \"Supporter\".\"Name\" FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
     }
 
-    public static async Task InitName(ulong id, string name)
+    public static async Task InitName(DiscordMember member)
     {
+        var id = member.Id;
+        var name = member.DisplayName;
         if (!GetName(id, out var names) || names.Length == 0 || string.IsNullOrEmpty(names[0]))
         {
             UpdateSupporterData(id, string.Empty, name);
@@ -110,6 +113,12 @@ internal static class SqlHelper
     public static string[] GetNames()
     {
         GetObjects<string>("SELECT * FROM public.\"GetSupportersName\"", out var result);
+        return result;
+    }
+
+    public static ulong[] GetDiscordIds()
+    {
+        GetObjects<ulong>($"SELECT \"Supporter\".\"DiscordID\" FROM public.\"Supporter\"", out var result);
         return result;
     }
 

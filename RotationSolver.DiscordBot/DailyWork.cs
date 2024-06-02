@@ -20,6 +20,7 @@ internal class DailyWork
                 try
                 {
                     await SendGithubMessage();
+                    await UpdateSupporterName();
                 }
                 catch
                 {
@@ -42,6 +43,20 @@ internal class DailyWork
                 var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed));
                 await message.CreateReactionAsync(emoji);
             }
+        }
+    }
+
+    private static async Task UpdateSupporterName()
+    {
+        var guild = await Service.Client.GetGuildAsync(Config.ServerId);
+
+        if (guild == null) return;
+
+        foreach (var id in SqlHelper.GetDiscordIds())
+        {
+            var member = await guild.GetMemberAsync(id);
+            if (member == null) continue;
+            await SqlHelper.InitName(member);
         }
     }
 }

@@ -69,7 +69,7 @@ public static partial class Service
         };
 
         await member.SendMessageAsync(builder);
-        await SqlHelper.InitName(member.Id, member.DisplayName);
+        await SqlHelper.InitName(member);
     }
 
     internal static async Task SendSubscribeThank(DiscordMember member)
@@ -87,7 +87,7 @@ public static partial class Service
         await member.SendMessageAsync(builder);
 
         await SupporterCommands.UpdateHashes();
-        await SqlHelper.InitName(member.Id, member.DisplayName);
+        await SqlHelper.InitName(member);
     }
 
     private static async Task Client_MessageDeleted(DiscordClient sender, MessageDeleteEventArgs args)

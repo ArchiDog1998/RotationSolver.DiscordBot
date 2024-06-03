@@ -2,7 +2,6 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json.Linq;
-using RotationSolver.DiscordBot.SlashCommands;
 
 namespace RotationSolver.DiscordBot;
 internal static class UnkownHander

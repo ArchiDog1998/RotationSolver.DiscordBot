@@ -1,6 +1,9 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using System.Collections.Concurrent;
+using System.Data;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
@@ -20,7 +23,8 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
                 ImageUrl = "https://c7.patreon.com/https%3A%2F%2Fwww.patreon.com%2F%2Fcreator-teaser-image%2F7803473/selector/%23creator-teaser%2C.png",
                 Color = DiscordColor.IndianRed,
                 Description = $"Hi, {ctx.Member.Mention}! You dont have any of the following roles: {string.Join(", ", roles)}!\n \n"
-                    + "If you have supported, please provide your reciept and DM to ArchiTed!",
+                    + "If you have supported, please use command `/askforrole` with your reciept!"
+                    + "\nIf you want a refund, please use command `/Supporter refund` with your ko-fi name!",
                 Footer = new() { Text = "It's just $2!" },
             };
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(builder));
@@ -36,6 +40,40 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
 [SlashCommandGroup("Supporter", "The commands for supporters")]
 public class SupporterCommands : ApplicationCommandModule
 {
+    internal static readonly ConcurrentDictionary<ulong, DiscordMember> _askings = [];
+
+    [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
+    [SupporterCheck(Config.SupporterRole)]
+    [SlashCommand("Refund", "Get your refund if you made a mistake.")]
+
+    public async Task GetRefund(InteractionContext ctx,
+        [Option("KofiName", "Your name in the ko-fi")] string name,
+        [Option("Time", "The time about your support")] string time)
+    {
+        var dev = ctx.Guild.GetChannel(Config.ModeratorChannel);
+        if (dev == null) return;
+
+        await ctx.DeferAsync();
+
+        var accept = new DiscordButtonComponent(ButtonStyle.Primary, "AcceptTheRefund", "Accept", false);
+        var reject = new DiscordButtonComponent(ButtonStyle.Danger, "RejectTheRefund", "Reject", false);
+        var link = new DiscordLinkButtonComponent("https://ko-fi.com/manage/supportreceived", "Link");
+
+        var message = new DiscordMessageBuilder()
+            .AddComponents(accept, reject, link)
+            .AddEmbed(new DiscordEmbedBuilder()
+            .WithDescription("Ask for the refund!")
+            .AddField("Member: ", ctx.Member.Mention)
+            .AddField("Name: ", name)
+            .AddField("Time: ", time));
+
+        var mess = await dev.SendMessageAsync(message);
+
+        _askings[mess.Id] = ctx.Member;
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Your request was sent to {dev.Mention}, so please wait."));
+    }
+
     [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
     [SupporterCheck(Config.SupporterRole, Config.KofiRole, Config.PatreonRole)]
     [SlashCommand("Name", "Adds your name to the ingame plugin supporter list if you are one.")]
@@ -95,7 +133,7 @@ public class SupporterCommands : ApplicationCommandModule
 
         SqlHelper.UpdateSupporterData(ctx.Member.Id, hash, string.Empty);
         await UpdateHashes();
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin in about 10 mins."));
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin in about 10 mins. And please do NOT leave this server, or you'll lose the supporter-only features!"));
     }
 
     internal static async Task UpdateHashes()

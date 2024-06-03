@@ -144,10 +144,21 @@ public static partial class Service
 
                     await args.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"{args.Interaction.User.Mention} **APPROVED** {pair.Item1.Mention} **{pair.Item2.Name}**"));
                     break;
+
                 case "RejectTheRole" when GeneralCommands._askings.TryRemove(args.Message.Id, out var pair):
                     await channel.SendMessageAsync($"{pair.Item1.Mention}'s request for the role **{pair.Item2.Name}** has been **REJECTED** by {args.Interaction.User.Mention}.");
                     await args.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"{args.Interaction.User.Mention} **REJECTED** {pair.Item1.Mention} **{pair.Item2.Name}**"));
+                    break;
 
+                case "AcceptTheRefund" when SupporterCommands._askings.TryRemove(args.Message.Id, out var member):
+                    await channel.SendMessageAsync($"{member.Mention}'s request for the **Refund** has been **APPROVED** by {args.Interaction.User.Mention}.");
+
+                    await args.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"{args.Interaction.User.Mention} **APPROVED** {member.Mention} **Refund**"));
+                    break;
+
+                case "RejectTheRefund" when SupporterCommands._askings.TryRemove(args.Message.Id, out var member):
+                    await channel.SendMessageAsync($"{member}'s request for the **Refund** has been **REJECTED** by {args.Interaction.User.Mention}.");
+                    await args.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"{args.Interaction.User.Mention} **REJECTED** {member.Mention} **Refund**"));
                     break;
 
                 default:

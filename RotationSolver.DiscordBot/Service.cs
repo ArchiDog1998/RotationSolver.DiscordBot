@@ -256,7 +256,7 @@ public static partial class Service
             str += exception.Message + "\n" + (exception.StackTrace ?? string.Empty) + "\n \n";
             exception = exception.InnerException;
         }
-        await dev.SendMessageAsync(str);
+        await dev.SendMessageAsync(str + "\nFrom " + args.Context.Member.Mention);
 
         try
         {
@@ -372,8 +372,6 @@ public static partial class Service
 
             amount /= 100;
             var currency = attr["campaign_currency"]?.ToString();
-
-            if (string.IsNullOrEmpty(currency)) return;
 
             var channel = await Client.GetChannelAsync(Config.KofiChannel);
 

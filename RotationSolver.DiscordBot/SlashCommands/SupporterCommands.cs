@@ -197,7 +197,12 @@ public class SupporterCommands : ApplicationCommandModule
 
         if (SqlHelper.GetHash(id, out value) && value.Length != 0)
         {
-            embedItem = embedItem.AddField("Hashes", string.Join("\n", value));
+            var hashes = string.Join("\n", value);
+
+            if (!string.IsNullOrEmpty(hashes))
+            {
+                embedItem = embedItem.AddField("Hashes", hashes);
+            }
         }
 
         await ctx.Member.SendMessageAsync(embed: embedItem);

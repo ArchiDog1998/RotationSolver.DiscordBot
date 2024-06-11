@@ -63,12 +63,12 @@ internal static class UnkownHander
 
                             var oldValues = change["old_value"] as JArray;
 
-                            ids = ids.Except(oldValues!.Select(i => ulong.Parse(i!.ToString())));
+                            var changedIds = ids.Except(oldValues!.Select(i => ulong.Parse(i!.ToString())));
 
                             switch (change["key"]!.ToString())
                             {
                                 case "applied_tags":
-                                    await OnApplyTag(guild, thread, [.. ids]);
+                                    await OnApplyTag(guild, thread, [..ids], [.. changedIds]);
                                     break;
                             }
                         }
@@ -78,16 +78,31 @@ internal static class UnkownHander
         }
     }
 
-    private static async Task OnApplyTag(DiscordGuild guild, DiscordThreadChannel thread, ulong[] ids)
+    private static async Task OnApplyTag(DiscordGuild guild, DiscordThreadChannel thread, ulong[] ids, ulong[] changedIds)
     {
-        if (ids.Length == 0) return;
+        if (changedIds.Length == 0) return;
 
-        var channel = guild.GetChannel(Config.KnownIssueChannel);
+        ulong channelId;
+        if (ids.Contains(Config.EnhancementTag)
+            || ids.Contains(Config.FeaturesTag))
+        {
+            channelId = Config.KnownIdeasChannel;
+        }
+        else if(ids.Contains(Config.BugsTag))
+        {
+            channelId = Config.KnownIssueChannel;
+        }
+        else
+        {
+            return;
+        }
+
+        var channel = guild.GetChannel(channelId);
         if (channel == null) return;
 
         var hasMessage = SqlHelper.GetIssueData(thread.Id, out var messageIds);
-        var addMessage = ids.Contains(Config.ConfirmedTag) && !ids.Contains(Config.CompletedTag) && !ids.Contains(Config.WontFixTag);
-        var deleteMessage = ids.Contains(Config.CompletedTag) || ids.Contains(Config.WontFixTag);
+        var addMessage = changedIds.Contains(Config.ConfirmedTag) && !changedIds.Contains(Config.CompletedTag) && !changedIds.Contains(Config.WontFixTag);
+        var deleteMessage = changedIds.Contains(Config.CompletedTag) || changedIds.Contains(Config.WontFixTag);
 
         if (addMessage && !hasMessage)
         {

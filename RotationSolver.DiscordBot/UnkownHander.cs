@@ -57,17 +57,17 @@ internal static class UnkownHander
                         changes = obj["changes"] as JArray;
                         foreach (var change in changes!)
                         {
-                            var newValues = change["new_value"] as JArray;
-
-                            var ids = newValues!.Select(i => ulong.Parse(i!.ToString()));
-
-                            var oldValues = change["old_value"] as JArray;
-
-                            var changedIds = ids.Except(oldValues!.Select(i => ulong.Parse(i!.ToString())));
-
                             switch (change["key"]!.ToString())
                             {
                                 case "applied_tags":
+                                    var newValues = change["new_value"] as JArray;
+
+                                    var ids = newValues!.Select(i => ulong.Parse(i!.ToString()));
+
+                                    var oldValues = change["old_value"] as JArray;
+
+                                    var changedIds = ids.Except(oldValues!.Select(i => ulong.Parse(i!.ToString())));
+
                                     await OnApplyTag(guild, thread, [..ids], [.. changedIds]);
                                     break;
                             }
@@ -102,7 +102,7 @@ internal static class UnkownHander
 
         var hasMessage = SqlHelper.GetIssueData(thread.Id, out var messageIds);
         var addMessage = changedIds.Contains(Config.ConfirmedTag) && !changedIds.Contains(Config.CompletedTag) && !changedIds.Contains(Config.WontFixTag);
-        var deleteMessage = changedIds.Contains(Config.CompletedTag) || changedIds.Contains(Config.WontFixTag);
+        var deleteMessage = changedIds.Contains(Config.WontFixTag);
 
         if (addMessage && !hasMessage)
         {

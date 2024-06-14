@@ -4,7 +4,7 @@ using DSharpPlus.SlashCommands;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
-internal class AplicationCommand : ApplicationCommandModule
+internal class ApplicationCommand : ApplicationCommandModule
 {
     [ContextMenu(ApplicationCommandType.UserContextMenu, "Pet Me")]
     public async Task PetMenu(ContextMenuContext ctx)

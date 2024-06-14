@@ -26,7 +26,7 @@ public static partial class Service
         slashCommands.RegisterCommands<GeneralCommands>();
         slashCommands.RegisterCommands<SupporterCommands>();
         slashCommands.RegisterCommands<BunnyCommands>();
-        slashCommands.RegisterCommands<AplicationCommand>();
+        slashCommands.RegisterCommands<ApplicationCommand>();
 
         slashCommands.SlashCommandErrored += SlashCommands_SlashCommandErrored;
 
@@ -201,7 +201,7 @@ public static partial class Service
     {
         var message = await args.Channel.GetMessageAsync(args.Message.Id);
         if (message.ReferencedMessage != null) return;
-        await AplicationCommand.DeleteTimeoutMessage(message);
+        await ApplicationCommand.DeleteTimeoutMessage(message);
     }
 
     internal static async Task CanViewChannel(DiscordChannel channel, bool canView)
@@ -310,7 +310,8 @@ public static partial class Service
             var login = owner?["login"]?.ToString();
             var authorUrl = owner?["html_url"]?.ToString();
 
-            var channel = await Client.GetChannelAsync((name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false) ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
+            var isRS = name?.Equals("RotationSolver", StringComparison.OrdinalIgnoreCase) ?? false;
+            var channel = await Client.GetChannelAsync(isRS ? Config.AnnounceMent : Config.RotationAnnounceMentChannel);
 
             var embedBuilder = new DiscordEmbedBuilder()
                 .WithAuthor(login, authorUrl, icon)
@@ -321,7 +322,43 @@ public static partial class Service
 
             var role = channel.Guild.GetRole(Config.AnnouncementSubRole);
 
-            var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(role.Mention).AddEmbed(embedBuilder));
+            var content = role.Mention;
+            if (isRS)
+            {
+                if (SqlHelper.GetFixedIssue(out var threadIds))
+                {
+                    var ideaChannel = await Client.GetChannelAsync(Config.KnownIdeasChannel);
+                    var bugChannel = await Client.GetChannelAsync(Config.KnownIssueChannel);
+
+                    foreach (var threadId in threadIds)
+                    {
+                        if (!channel.Guild.Threads.TryGetValue(threadId, out var thread)) continue;
+                        //TODO: close thread.
+
+                        try
+                        {
+                            if (!SqlHelper.GetIssueData(thread.Id, out var messageIds)) continue;
+                            if (messageIds == null || messageIds.Length == 0) continue;
+                            content += "\n- " + thread.Mention;
+
+                            var deleteMessage = await ideaChannel.GetMessageAsync(messageIds[0])
+                                ?? await bugChannel.GetMessageAsync(messageIds[0]);
+                            await deleteMessage.DeleteAsync();
+                        }
+                        finally
+                        {
+                            SqlHelper.DeleteIssueData(thread.Id);
+                        }
+                    }
+                }
+                foreach (var thread in channel.Guild.Threads.Values)
+                {
+                    if (thread.ParentId != Config.PreReleaseChannel) continue;
+                    //TODO: close thread.
+                }
+            }
+
+            var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(content).AddEmbed(embedBuilder));
             await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
         }
         catch(Exception ex)

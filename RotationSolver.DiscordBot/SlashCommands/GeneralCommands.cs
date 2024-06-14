@@ -134,6 +134,7 @@ public class GeneralCommands : ApplicationCommandModule
     [SlashCommand("pollforjobs", "Poll for jobs for helping you choose the job to develop.")]
     public async Task PollForJobs(InteractionContext ctx,
         [Option("pollType", "The type of poll.")] PollType type,
+        [Option("combatType", "The type of combat.")] CombatType combatType,
         [Option("days", "The days for polling.")]double days = 1)
     {
         await ctx.DeferAsync();
@@ -143,7 +144,7 @@ public class GeneralCommands : ApplicationCommandModule
         {
             Title = $"Poll For Jobs!",
             Color = DiscordColor.IndianRed,
-            Description = $"Which jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
+            Description = $"Which **{combatType}** jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
             Timestamp = DateTime.UtcNow.AddDays(days),
         };
         var message = await channel.SendMessageAsync(builder);
@@ -172,5 +173,59 @@ public class GeneralCommands : ApplicationCommandModule
     {
         Fix,
         Create,
+    }
+    public enum CombatType
+    {
+        PvP,
+        PvE,
+    }
+
+    [SlashCommandPermissions(Permissions.Administrator)]
+    [BotChannel]
+    [SlashCommand("prerelease", "pre-release the version.")]
+    public async Task CreatePrerelease(InteractionContext ctx,
+        [Option("tittle", "The tittle of the post.")] string tittle,
+        [Option("RS", "The rs file")] DiscordAttachment rsFile,
+        [Option("rotation", "The rotation file")] DiscordAttachment? rotationFile = null)
+    {
+        await ctx.DeferAsync();
+
+        var channel = ctx.Guild.GetChannel(Config.PreReleaseChannel) as DiscordForumChannel;
+        if (channel == null)
+        {
+            await ctx.DeleteResponseAsync();
+            return;
+        }
+
+        using var client = new HttpClient();
+
+        var content = "## Issues:";
+        if (SqlHelper.GetFixedIssue(out var threadIds))
+        {
+            foreach (var thread in ctx.Guild.Threads.Values)
+            {
+                if (thread.ParentId != Config.FeedbackChannel) continue;
+                if (threadIds.Contains(thread.Id)) continue;
+                if (!thread.AppliedTags.Any(i => i.Id == Config.CompletedTag)) continue;
+
+                content += "\n" + thread.Mention;
+                //TODO: close thread.
+            }
+        }
+
+        var message = new DiscordMessageBuilder()
+            .WithContent(content)
+            .AddFile("Rotation Solver", await client.GetStreamAsync(rsFile.Url));
+
+        if (rotationFile != null)
+        {
+            message = message.AddFile("Rotations", await client.GetStreamAsync(rotationFile.Url));
+        }
+
+        var forum = await channel.CreateForumPostAsync(new ForumPostBuilder()
+            .WithMessage(message)
+            .WithName(tittle));
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Created a new post " + forum.Channel.Mention));
     }
 }

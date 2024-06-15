@@ -200,14 +200,22 @@ public class GeneralCommands : ApplicationCommandModule
         using var client = new HttpClient();
 
         var content = "## Issues:";
-        if (SqlHelper.GetFixedIssue(out var threadIds))
+        if (SqlHelper.GetNotFixedIssue(out var threadIds))
         {
-            foreach (var thread in ctx.Guild.Threads.Values)
+            var result = await ctx.Guild.ListActiveThreadsAsync();
+            
+            foreach (var threadId in threadIds)
             {
-                if (thread.ParentId != Config.FeedbackChannel) continue;
-                if (threadIds.Contains(thread.Id)) continue;
-                if (!thread.AppliedTags.Any(i => i.Id == Config.CompletedTag)) continue;
+                var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
 
+                if (thread == null) continue;
+
+                if (!thread.AppliedTags.Any(i => i.Id == Config.CompletedTag))
+                {
+                    continue;
+                }
+
+                SqlHelper.FixedIssueData(threadId);
                 content += "\n" + thread.Mention;
                 //TODO: close thread.
             }
@@ -215,11 +223,11 @@ public class GeneralCommands : ApplicationCommandModule
 
         var message = new DiscordMessageBuilder()
             .WithContent(content)
-            .AddFile("Rotation Solver", await client.GetStreamAsync(rsFile.Url));
+            .AddFile(rsFile.FileName, await client.GetStreamAsync(rsFile.Url));
 
         if (rotationFile != null)
         {
-            message = message.AddFile("Rotations", await client.GetStreamAsync(rotationFile.Url));
+            message = message.AddFile(rotationFile.FileName, await client.GetStreamAsync(rotationFile.Url));
         }
 
         var forum = await channel.CreateForumPostAsync(new ForumPostBuilder()

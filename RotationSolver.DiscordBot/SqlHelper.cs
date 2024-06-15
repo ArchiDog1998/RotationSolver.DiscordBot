@@ -1,8 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RotationSolver.DiscordBot;
 
@@ -61,6 +59,11 @@ internal static class SqlHelper
     public static bool GetFixedIssue(out ulong[] threadIds)
     {
         return GetObjects("SELECT \"ThreadID\" FROM public.\"Issues\" WHERE \"Fixed\";", out threadIds);
+    }
+
+    public static bool GetNotFixedIssue(out ulong[] threadIds)
+    {
+        return GetObjects("SELECT \"ThreadID\" FROM public.\"Issues\" WHERE NOT \"Fixed\";", out threadIds);
     }
 
     public static bool GetIssueData(ulong id, out ulong[] data)

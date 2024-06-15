@@ -330,9 +330,14 @@ public static partial class Service
                     var ideaChannel = await Client.GetChannelAsync(Config.KnownIdeasChannel);
                     var bugChannel = await Client.GetChannelAsync(Config.KnownIssueChannel);
 
+                    var result = await ideaChannel.Guild.ListActiveThreadsAsync();
+
+
                     foreach (var threadId in threadIds)
                     {
-                        if (!channel.Guild.Threads.TryGetValue(threadId, out var thread)) continue;
+                        var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
+
+                        if (thread == null) continue;
                         //TODO: close thread.
 
                         try

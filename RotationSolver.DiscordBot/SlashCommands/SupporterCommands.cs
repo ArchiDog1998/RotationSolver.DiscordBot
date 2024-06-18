@@ -206,6 +206,6 @@ public class SupporterCommands : ApplicationCommandModule
         }
 
         await ctx.Member.SendMessageAsync(embed: embedItem);
-        await ctx.DeleteResponseAsync();
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Your information has been sent privately."));
     }
 }

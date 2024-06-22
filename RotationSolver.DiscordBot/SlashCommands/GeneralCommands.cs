@@ -234,8 +234,6 @@ public class GeneralCommands : ApplicationCommandModule
             .WithMessage(message)
             .WithName(tittle));
 
-        await forum.Channel.AddThreadMemberAsync(ctx.Member);
-
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Created a new post " + forum.Channel.Mention));
     }
 }

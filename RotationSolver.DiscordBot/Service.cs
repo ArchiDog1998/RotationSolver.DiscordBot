@@ -180,11 +180,26 @@ public static partial class Service
         var member = await args.Guild.GetMemberAsync(args.Author.Id);
         if (member == null) return;
 
+        if (args.Channel.Id is Config.AnnounceMent or Config.RotationAnnounceMentChannel or Config.GithubChannel)
+        {
+            await AddAnimatedLogo(args.Guild, args.Message);
+        }
+
         if (member.IsBot) return;
         if (member.Roles.Any(r => r.Id == Config.ModeratorRole)) return; //Moderators can do anything!
 
         await DontAtMe(args, member);
         await ManageLogMessages(args, member);
+    }
+
+    internal static async Task AddAnimatedLogo(DiscordGuild guild, DiscordMessage message)
+    {
+        var emojis = await guild.GetEmojisAsync();
+        var emoji = emojis.FirstOrDefault(e => e.Name.Contains("RSLogoAnimated"));
+        if (emoji != null)
+        {
+            await message.CreateReactionAsync(emoji);
+        }
     }
 
     private static async Task ManageLogMessages(MessageCreateEventArgs args, DiscordMember member)
@@ -363,8 +378,7 @@ public static partial class Service
                 }
             }
 
-            var message = await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(content).AddEmbed(embedBuilder));
-            await message.CreateReactionAsync(DiscordEmoji.FromGuildEmote(Client, Config.RotationSolverIcon));
+            await channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(content).AddEmbed(embedBuilder));
         }
         catch(Exception ex)
         {

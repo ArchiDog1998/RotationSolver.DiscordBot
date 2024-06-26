@@ -1,40 +1,38 @@
 ﻿using DSharpPlus.Entities;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using RotationSolver.DiscordBot.Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
 
 namespace RotationSolver.DiscordBot;
 
 internal static class SqlHelper
 {
-    public struct CommitItem
-    {
-        public string Sha { get; set; }
-        public long Repo { get; set; }
-    }
-
     private static NpgsqlConnection CreateConnection()
     {
         return new NpgsqlConnection(Config.PostgreSQL);
     }
 
-    public static bool GetAndClearCommits(out CommitItem[] data)
+    public static async Task<CommitItem[]> GetAndClearCommits()
     {
-        var result = GetObjects($"SELECT * FROM public.\"GithubCommit\"", out data, r =>
-        {
-            var result = new CommitItem
-            {
-                Sha = (string)r[0],
-                Repo = (long)r[1]
-            };
-            return result;
-        });
-        SetValues($"TRUNCATE public.\"GithubCommit\"");
-        return result;
+        using var connect = new PostgreContext();
+
+        CommitItem[] data = [.. connect.GithubCommit];
+
+        await connect.Database.ExecuteSqlRawAsync("TRUNCATE public.\"GithubCommit\"");
+
+        await connect.SaveChangesAsync();
+
+        return data;
     }
 
-    public static void InsertGithubCommit(string sha, long repoId)
+    public static async Task InsertGithubCommit(string sha, long repoId)
     {
-        SetValues($"INSERT INTO public.\"GithubCommit\"(\"Sha\", \"Repo\") VALUES ('{sha}', {repoId});");
+        using var connect = new PostgreContext();
+
+        connect.GithubCommit.Add(new() { Sha = sha, Repo = repoId, });
+
+        await connect.SaveChangesAsync();
     }
 
     public static void UpdateSupporterData(ulong id, string hash, string name)

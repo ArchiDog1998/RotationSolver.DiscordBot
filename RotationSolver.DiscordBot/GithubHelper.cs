@@ -77,7 +77,7 @@ internal static class GithubHelper
     internal static string ModifySupporterName = "Modified the supporter's name.",
         ModifySupporterHash = "Modified the supporter's hash.";
 
-    internal static void SendGithubPush(string s)
+    internal static async void SendGithubPush(string s)
     {
         try
         {
@@ -89,7 +89,7 @@ internal static class GithubHelper
             foreach (var commit in (JArray)obj["commits"]!)
             {
                 var sha = commit["id"]!.ToString();
-                SqlHelper.InsertGithubCommit(sha, id);
+                await SqlHelper.InsertGithubCommit(sha, id);
             }
         }
         catch(Exception ex)
@@ -102,7 +102,7 @@ internal static class GithubHelper
     internal static async Task<DiscordEmbed[]> GetCommitMessage()
     {
         var list = new List<DiscordEmbed>();
-        SqlHelper.GetAndClearCommits(out var data);
+        var data = await SqlHelper.GetAndClearCommits();
 
         if (data == null || data.Length == 0) return [];
 

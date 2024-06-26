@@ -18,12 +18,12 @@ internal static class UnkownHander
             case "guild_audit_log_entry_create":
                 var obj = JObject.Parse(args.Json);
 
+                var guildId = ulong.Parse(obj["guild_id"]!.ToString());
+                var guild = await sender.GetGuildAsync(guildId);
+
                 switch (int.Parse(obj["action_type"]!.ToString()))
                 {
                     case 25://Role change
-                        var guildId = ulong.Parse(obj["guild_id"]!.ToString());
-                        var guild = await sender.GetGuildAsync(guildId);
-
                         var tarId = ulong.Parse(obj["target_id"]!.ToString());
                         var member = await guild.GetMemberAsync(tarId);
 
@@ -48,9 +48,6 @@ internal static class UnkownHander
                         break;
 
                     case 111: //Tag Modified.
-                        guildId = ulong.Parse(obj["guild_id"]!.ToString());
-                        guild = await sender.GetGuildAsync(guildId);
-
                         tarId = ulong.Parse(obj["target_id"]!.ToString());
                         if (!guild.Threads.TryGetValue(tarId, out var thread)) break;
 
@@ -72,6 +69,24 @@ internal static class UnkownHander
                                     break;
                             }
                         }
+                        break;
+
+                    case 110: //Create the post
+                        tarId = ulong.Parse(obj["target_id"]!.ToString());
+
+                        var threads = await guild.ListActiveThreadsAsync();
+
+                        thread = threads.Threads.FirstOrDefault(thread => thread.Id == tarId);
+
+                        if (thread == null) break;
+                        var messages = await thread.GetMessagesAsync(1);
+
+                        if (messages.Count == 0) break;
+                        var message = messages[0];
+                        if (message == null) break;
+
+                        await Service.AddAnimatedLogo(guild, message);
+
                         break;
                 }
                 break;

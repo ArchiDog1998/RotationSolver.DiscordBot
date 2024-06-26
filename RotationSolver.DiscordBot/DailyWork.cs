@@ -37,11 +37,9 @@ internal class DailyWork
         var embeds = await GithubHelper.GetCommitMessage();
         if (embeds.Length != 0)
         {
-            var emoji = DiscordEmoji.FromGuildEmote(Service.Client, Config.RotationSolverIcon);
             foreach (var embed in embeds) 
             {
-                var message = await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed));
-                await message.CreateReactionAsync(emoji);
+                await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed));
             }
         }
     }

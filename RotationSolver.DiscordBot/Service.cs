@@ -182,7 +182,10 @@ public static partial class Service
 
         if (args.Channel.Id is Config.AnnounceMent or Config.RotationAnnounceMentChannel or Config.GithubChannel)
         {
-            await AddAnimatedLogo(args.Guild, args.Message);
+            if (!args.Message.Reactions.Any())
+            {
+                await AddAnimatedLogo(args.Guild, args.Message);
+            }
         }
 
         if (member.IsBot) return;

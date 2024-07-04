@@ -152,7 +152,14 @@ public class GeneralCommands : ApplicationCommandModule
         foreach (var emoji in ctx.Guild.Emojis.Values.OrderBy(v => v.Id))
         {
             if (!emoji.Name.StartsWith("Job")) continue;
-            await message.CreateReactionAsync(emoji);
+            try
+            {
+                await message.CreateReactionAsync(emoji);
+            }
+            catch
+            {
+
+            }
         }
         await ctx.DeleteResponseAsync();
 

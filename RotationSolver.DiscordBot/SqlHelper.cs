@@ -162,18 +162,26 @@ internal static class SqlHelper
 
         var find = false;
         List<T> result = [];
-        while (reader.Read())
+        try
         {
-            find = true;
-            try
+            while (reader.Read())
             {
-                result.Add(convert(reader));
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message + "\n" + ex.StackTrace ?? string.Empty);
+                find = true;
+                try
+                {
+                    result.Add(convert(reader));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message + "\n" + ex.StackTrace ?? string.Empty);
+                }
             }
         }
+        catch
+        {
+
+        }
+
         array = [.. result];
         return find;
     }

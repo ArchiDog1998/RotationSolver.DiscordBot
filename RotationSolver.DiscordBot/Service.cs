@@ -171,7 +171,9 @@ public static partial class Service
             await args.Interaction.DeleteOriginalResponseAsync();
         }
 
-        await args.Message.DeleteAsync();
+        var builder = new DiscordMessageBuilder(args.Message);
+        builder.ClearComponents();
+        await args.Message.ModifyAsync(builder);
     }
 
     private static async Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs args)

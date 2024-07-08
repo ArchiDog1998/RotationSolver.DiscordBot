@@ -2,6 +2,7 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using System;
 using System.Collections.Concurrent;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
@@ -147,33 +148,54 @@ public class GeneralCommands : ApplicationCommandModule
             Description = $"Which **{combatType}** jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
             Timestamp = DateTime.UtcNow.AddDays(days),
         };
-        var message = await channel.SendMessageAsync(builder);
+
+        var messages = new List<DiscordMessage>() { await channel.SendMessageAsync(builder) };
 
         foreach (var emoji in ctx.Guild.Emojis.Values.OrderBy(v => v.Id))
         {
             if (!emoji.Name.StartsWith("Job")) continue;
+            var message = messages.Last();
+
+            try
+            {
+                var aniEmoji = (await ctx.Guild.GetEmojisAsync()).FirstOrDefault(e => e.Name.Contains("RSLogoAnimated"));
+                await message.DeleteReactionsEmojiAsync(aniEmoji);
+            }
+            catch
+            {
+
+            }
+
             try
             {
                 await message.CreateReactionAsync(emoji);
             }
             catch
             {
-
+                message = await channel.SendMessageAsync("Emoji Holder");
+                messages.Add(message);
+                await message.CreateReactionAsync(emoji);
             }
         }
         await ctx.DeleteResponseAsync();
 
         await Task.Delay(TimeSpan.FromDays(days));
 
-        message = await channel.GetMessageAsync(message.Id);
+        Dictionary<DiscordEmoji, int> Counts = [];
+        foreach (var msg in messages)
+        {
+            var message = await channel.GetMessageAsync(msg.Id);
 
-        var reactions = message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job"));
-        var max = reactions.Select(r => r.Count).Max();
-        reactions = reactions.Where(reactions => reactions.Count == max);
-        var emojies = string.Join(" ", reactions.Select(reaction => reaction.Emoji.ToString()));
-        var count = max - 1;
-
-        await message.RespondAsync($"Hi, {ctx.Member.Mention}! The highest chosen {(reactions.Count() > 1 ? "jobs are" : "job is")}:\n {emojies}, with {count} vote{(count == 1 ? "s" : "")}!");
+            foreach (var reaction in message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job")))
+            {
+                if (!Counts.TryGetValue(reaction.Emoji, out var count)) count = 0;
+                Counts[reaction.Emoji] = reaction.Count - 1 + count;
+            }
+        }
+        var max = Counts.Select(r => r.Value).Max();
+        var pairs = Counts.Where(reactions => reactions.Value == max);
+        var emojies = string.Join(" ", pairs.Select(i => i.Key.ToString()));
+        await messages.First().RespondAsync($"Hi, {ctx.Member.Mention}! The highest chosen {(pairs.Count() > 1 ? "jobs are" : "job is")}:\n {emojies}, with {max} vote{(max == 1 ? "s" : "")}!");
     }
 
     public enum PollType

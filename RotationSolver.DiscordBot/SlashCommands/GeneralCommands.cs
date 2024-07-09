@@ -184,14 +184,23 @@ public class GeneralCommands : ApplicationCommandModule
         Dictionary<DiscordEmoji, int> Counts = [];
         foreach (var msg in messages)
         {
-            var message = await channel.GetMessageAsync(msg.Id);
-
-            foreach (var reaction in message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job")))
+            try
             {
-                if (!Counts.TryGetValue(reaction.Emoji, out var count)) count = 0;
-                Counts[reaction.Emoji] = reaction.Count - 1 + count;
+                var message = await channel.GetMessageAsync(msg.Id);
+
+                foreach (var reaction in message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job")))
+                {
+                    if (!Counts.TryGetValue(reaction.Emoji, out var count)) count = 0;
+                    Counts[reaction.Emoji] = reaction.Count - 1 + count;
+                }
+            }
+            catch 
+            { 
             }
         }
+
+        if (Counts.Count == 0) return;
+
         var max = Counts.Select(r => r.Value).Max();
         var pairs = Counts.Where(reactions => reactions.Value == max);
         var emojies = string.Join(" ", pairs.Select(i => i.Key.ToString()));

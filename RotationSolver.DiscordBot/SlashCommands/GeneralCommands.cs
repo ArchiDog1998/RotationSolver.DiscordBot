@@ -136,7 +136,7 @@ public class GeneralCommands : ApplicationCommandModule
     public async Task PollForJobs(InteractionContext ctx,
         [Option("pollType", "The type of poll.")] PollType type,
         [Option("combatType", "The type of combat.")] CombatType combatType,
-        [Option("days", "The days for polling.")]double days = 1)
+        [Option("days", "The days for polling.")]double days = 0)
     {
         await ctx.DeferAsync();
         var channel = await Service.Client.GetChannelAsync(Config.RotationAnnounceMentChannel);
@@ -146,8 +146,12 @@ public class GeneralCommands : ApplicationCommandModule
             Title = $"Poll For Jobs!",
             Color = DiscordColor.IndianRed,
             Description = $"Which **{combatType}** jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
-            Timestamp = DateTime.UtcNow.AddDays(days),
         };
+
+        if (days > 0)
+        {
+            builder.Timestamp = DateTime.UtcNow.AddDays(days);
+        }
 
         var messages = new List<DiscordMessage>() { await channel.SendMessageAsync(builder) };
 
@@ -179,6 +183,7 @@ public class GeneralCommands : ApplicationCommandModule
         }
         await ctx.DeleteResponseAsync();
 
+        if (days == 0) return;
         await Task.Delay(TimeSpan.FromDays(days));
 
         Dictionary<DiscordEmoji, int> Counts = [];

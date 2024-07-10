@@ -262,11 +262,11 @@ public static partial class Service
             return;
         }
 
-        await SendException(exception, args.Context.Member.Mention);
+        var dev = await SendException(exception, args.Context.Member.Mention);
 
         try
         {
-            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Errored! Already sent the error to {dev.Mention}, Please wait for their check!"));
+            await args.Context.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Errored! Already sent the error to {dev?.Mention ?? "unknown"}, Please wait for their check!"));
         }
         catch
         {
@@ -429,12 +429,12 @@ public static partial class Service
         }
     }
 
-    private static async Task SendException(Exception? ex, string mention = "")
+    private static async Task<DiscordChannel?> SendException(Exception? ex, string mention = "")
     {
         var dev = await Client.GetChannelAsync(Config.ModeratorChannel);
         if (dev == null)
         {
-            return;
+            return null;
         }
 
         var str = string.Empty;
@@ -448,5 +448,7 @@ public static partial class Service
             str += "\nFrom " + mention;
         }
         await dev.SendMessageAsync(str);
+
+        return dev;
     }
 }

@@ -4,6 +4,8 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
 using RotationSolver.DiscordBot.SlashCommands;
+using System;
+using System.Runtime.InteropServices;
 using System.Web;
 
 namespace RotationSolver.DiscordBot;
@@ -260,20 +262,7 @@ public static partial class Service
             return;
         }
 
-        var dev = args.Context.Guild.GetChannel(Config.ModeratorChannel);
-        if (dev == null)
-        {
-            await args.Context.DeleteResponseAsync();
-            return;
-        }
-
-        var str = string.Empty;
-        while (exception != null)
-        {
-            str += exception.Message + "\n" + (exception.StackTrace ?? string.Empty) + "\n \n";
-            exception = exception.InnerException;
-        }
-        await dev.SendMessageAsync(str + "\nFrom " + args.Context.Member.Mention);
+        await SendException(exception, args.Context.Member.Mention);
 
         try
         {
@@ -384,8 +373,7 @@ public static partial class Service
         }
         catch(Exception ex)
         {
-            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
-            return;
+            await SendException(ex);
         }
     }
 
@@ -435,10 +423,30 @@ public static partial class Service
 
             await channel.SendMessageAsync($"Thank you **{name}** for donating {currency} {amount:f2}! :sparkling_heart:");
         }
-        catch (Exception ex)
+        catch (Exception? ex)
         {
-            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            await SendException(ex);
+        }
+    }
+
+    private static async Task SendException(Exception? ex, string mention = "")
+    {
+        var dev = await Client.GetChannelAsync(Config.ModeratorChannel);
+        if (dev == null)
+        {
             return;
         }
+
+        var str = string.Empty;
+        while (ex != null)
+        {
+            str += ex.Message + "\n" + (ex.StackTrace ?? string.Empty) + "\n \n";
+            ex = ex.InnerException;
+        }
+        if(!string.IsNullOrEmpty(str))
+        {
+            str += "\nFrom " + mention;
+        }
+        await dev.SendMessageAsync(str);
     }
 }

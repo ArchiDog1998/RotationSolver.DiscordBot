@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RotationSolver.DiscordBot.Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Channels;
+using System.Xml.Linq;
 
 namespace RotationSolver.DiscordBot;
 
@@ -36,13 +39,29 @@ internal static class SqlHelper
         await connect.SaveChangesAsync();
     }
 
-    public static void UpdateSupporterData(ulong id, string hash, string name)
+    public static async Task UpdateSupporterData(ulong id, string? hash, string? name)
     {
-        SetValues($"CALL public.upsert_supporter({id}, {hash.GetValue()}, {name.GetValue()})");
-        if (!string.IsNullOrEmpty(hash))
+        using var connect = new PostgreContext();
+
+        var item = connect.Supporter.Find(id);
+
+        if(item == null)
         {
-            IsvalidSupporter(id, true);
+            await connect.Supporter.AddAsync(new SupporterItem
+            {
+                DiscordID = id,
+                Hashes = hash == null ? [] : [hash],
+                Name = name,
+            });
         }
+        else
+        {
+            item.Hashes = hash == null ? item.Hashes : item.Hashes.Append(hash).TakeLast(8).ToArray();
+            item.Name = name ?? item.Name;
+            connect.Update(item);
+        }
+
+        await connect.SaveChangesAsync();
     }
 
     public static void FixedIssueData(ulong threadId)
@@ -75,35 +94,24 @@ internal static class SqlHelper
         GetObjects<ulong>($"DELETE FROM public.\"Issues\" WHERE \"ThreadID\" = {id};", out _);
     }
 
-    private static string GetValue(this string str)
-    {
-        if (string.IsNullOrEmpty(str))
-        {
-            return "null";
-        }
-        else
-        {
-            return $"'{str}'";
-        }
-    }
-
     public static async Task UpdateRotationDevChannel(ulong id, ulong channelId)
     {
         using var connect = new PostgreContext();
+        var item = connect.RotationDev.Find(id);
 
-        await connect.RotationDev
-            .Upsert(new DeveloperItem()
+        if (item == null)
+        {
+            await connect.RotationDev.AddAsync(new DeveloperItem
             {
                 DiscordID = id,
                 ChannelID = channelId,
-            })
-            .On(i => new { i.DiscordID })
-            .WhenMatched(i => new DeveloperItem()
-            {
-                ChannelID = channelId,
-            })
-            .RunAsync();
-
+            });
+        }
+        else
+        {
+            item.ChannelID = channelId;
+            connect.Update(item);
+        }
         await connect.SaveChangesAsync();
     }
 
@@ -164,7 +172,7 @@ internal static class SqlHelper
             return false;
         }
 
-        data = item.Hashes;
+        data = item.Hashes.ToArray();
         return true;
     }
 

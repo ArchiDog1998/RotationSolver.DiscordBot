@@ -3,10 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RotationSolver.DiscordBot.Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Channels;
-using System.Xml.Linq;
 
 namespace RotationSolver.DiscordBot;
 
@@ -64,34 +61,50 @@ internal static class SqlHelper
         await connect.SaveChangesAsync();
     }
 
-    public static void FixedIssueData(ulong threadId)
+    public static async Task FixedIssueData(ulong threadId)
     {
-        SetValues($"UPDATE public.\"Issues\" SET \"Fixed\"=true WHERE \"ThreadID\" = {threadId};");
+        using var connect = new PostgreContext();
+        var item = connect.Issues.Find(threadId);
+        if (item == null) return;
+        item.Fixed = true;
+        connect.Update(item);
+        await connect.SaveChangesAsync();
     }
 
-    public static void InsertIssueData(ulong threadId, ulong messageId)
+    public static async Task InsertIssueData(ulong threadId, ulong messageId)
     {
-        SetValues($"INSERT INTO public.\"Issues\"(\"ThreadID\", \"MessageID\")VALUES ({threadId}, {messageId});");
+        using var connect = new PostgreContext();
+        await connect.Issues.AddAsync(new() { ThreadID = threadId, MessageID = messageId });
+        await connect.SaveChangesAsync();
     }
 
-    public static bool GetFixedIssue(out ulong[] threadIds)
+    public static IEnumerable<ulong> GetFixedIssue()
     {
-        return GetObjects("SELECT \"ThreadID\" FROM public.\"Issues\" WHERE \"Fixed\";", out threadIds);
+        using var connect = new PostgreContext();
+        return connect.Issues.Where(i => i.Fixed).Select(i => i.ThreadID);
     }
 
-    public static bool GetNotFixedIssue(out ulong[] threadIds)
+    public static IEnumerable<ulong> GetNotFixedIssue()
     {
-        return GetObjects("SELECT \"ThreadID\" FROM public.\"Issues\" WHERE NOT \"Fixed\";", out threadIds);
+        using var connect = new PostgreContext();
+        return connect.Issues.Where(i => !i.Fixed).Select(i => i.ThreadID);
     }
 
-    public static bool GetIssueData(ulong id, out ulong[] data)
+    public static bool GetIssueData(ulong id, out ulong data)
     {
-        return GetObjects($"SELECT \"MessageID\" FROM public.\"Issues\" WHERE \"ThreadID\" = {id};", out data);
+        using var connect = new PostgreContext();
+        var item = connect.Issues.Find(id);
+        data = item?.MessageID ?? 0;
+        return item != null;
     }
 
-    public static void DeleteIssueData(ulong id)
+    public static async Task DeleteIssueData(ulong id)
     {
-        GetObjects<ulong>($"DELETE FROM public.\"Issues\" WHERE \"ThreadID\" = {id};", out _);
+        using var connect = new PostgreContext();
+        var item = connect.Issues.Find(id);
+        if (item == null) return;
+        connect.Issues.Remove(item);
+        await connect.SaveChangesAsync();
     }
 
     public static async Task UpdateRotationDevChannel(ulong id, ulong channelId)
@@ -172,7 +185,7 @@ internal static class SqlHelper
             return false;
         }
 
-        data = item.Hashes.ToArray();
+        data = item.Hashes;
         return true;
     }
 
@@ -190,7 +203,7 @@ internal static class SqlHelper
         var name = member.DisplayName;
         if (!GetName(id, out _))
         {
-            UpdateSupporterData(id, string.Empty, name);
+            await UpdateSupporterData(id, string.Empty, name);
             await SupporterCommands.UpdateNames();
         }
     }
@@ -212,52 +225,5 @@ internal static class SqlHelper
         using var connect = new PostgreContext();
 
         return [.. connect.Supporter.Where(i => i.IsValid).ToArray().SelectMany(i => i.Hashes).Where(s => !string.IsNullOrEmpty(s))];
-    }
-
-    private static void SetValues(string cmd)
-    {
-        using var conenction = CreateConnection();
-
-        conenction.Open();
-        using var command = new NpgsqlCommand(cmd, conenction);
-
-        command.ExecuteNonQuery();
-    }
-
-    [Obsolete]
-    private static bool GetObjects<T>(string cmd, out T[] array, Func<NpgsqlDataReader, T>? convert = null)
-    {
-        convert ??= r => (T)Convert.ChangeType(r[0], typeof(T));
-
-        using var conenction = CreateConnection();
-        conenction.Open();
-
-        using var command = new NpgsqlCommand(cmd, conenction);
-        using var reader = command.ExecuteReader();
-
-        var find = false;
-        List<T> result = [];
-        try
-        {
-            while (reader.Read())
-            {
-                find = true;
-                try
-                {
-                    result.Add(convert(reader));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message + "\n" + ex.StackTrace ?? string.Empty);
-                }
-            }
-        }
-        catch
-        {
-
-        }
-
-        array = [.. result];
-        return find;
     }
 }

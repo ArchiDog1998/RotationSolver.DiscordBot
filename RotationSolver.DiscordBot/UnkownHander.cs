@@ -115,20 +115,20 @@ internal static class UnkownHander
         var channel = guild.GetChannel(channelId);
         if (channel == null) return;
 
-        var hasMessage = SqlHelper.GetIssueData(thread.Id, out var messageIds);
+        var hasMessage = SqlHelper.GetIssueData(thread.Id, out var messageId);
         var addMessage = changedIds.Contains(Config.ConfirmedTag) && !changedIds.Contains(Config.CompletedTag) && !changedIds.Contains(Config.WontFixTag);
         var deleteMessage = changedIds.Contains(Config.WontFixTag);
 
         if (addMessage && !hasMessage)
         {
             var message = await channel.SendMessageAsync($"## {thread.Mention}");
-            SqlHelper.InsertIssueData(thread.Id, message.Id);
+           await SqlHelper.InsertIssueData(thread.Id, message.Id);
         }
-        else if (deleteMessage && hasMessage && messageIds.Length == 1)
+        else if (deleteMessage && hasMessage)
         {
-            var message = await channel.GetMessageAsync(messageIds[0]);
+            var message = await channel.GetMessageAsync(messageId);
             await channel.DeleteMessageAsync(message);
-            SqlHelper.DeleteIssueData(thread.Id);
+            await SqlHelper.DeleteIssueData(thread.Id);
         }
     }
 

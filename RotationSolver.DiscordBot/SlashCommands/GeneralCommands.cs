@@ -308,25 +308,24 @@ public class GeneralCommands : ApplicationCommandModule
         using var client = new HttpClient();
 
         var content = "## Issues:";
-        if (SqlHelper.GetNotFixedIssue(out var threadIds))
+        var threadIds = SqlHelper.GetNotFixedIssue();
+
+        var result = await ctx.Guild.ListActiveThreadsAsync();
+
+        foreach (var threadId in threadIds)
         {
-            var result = await ctx.Guild.ListActiveThreadsAsync();
-            
-            foreach (var threadId in threadIds)
+            var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
+
+            if (thread == null) continue;
+
+            if (!thread.AppliedTags.Any(i => i.Id == Config.CompletedTag))
             {
-                var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
-
-                if (thread == null) continue;
-
-                if (!thread.AppliedTags.Any(i => i.Id == Config.CompletedTag))
-                {
-                    continue;
-                }
-
-                SqlHelper.FixedIssueData(threadId);
-                content += "\n" + thread.Mention;
-                //TODO: close thread.
+                continue;
             }
+
+            SqlHelper.FixedIssueData(threadId);
+            content += "\n" + thread.Mention;
+            //TODO: close thread.
         }
 
         var message = new DiscordMessageBuilder()

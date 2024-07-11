@@ -74,7 +74,7 @@ public static partial class Service
 
     internal static async Task SendSubscribeThank(DiscordMember member)
     {
-        SqlHelper.IsvalidSupporter(member.Id, true);
+        await SqlHelper.IsvalidSupporter(member.Id, true);
 
         var builder = new DiscordEmbedBuilder()
         {
@@ -275,7 +275,7 @@ public static partial class Service
     private static async Task Client_GuildMemberRemoved(DiscordClient sender, GuildMemberRemoveEventArgs args)
     {
         //Invalid Supporter.
-        SqlHelper.IsvalidSupporter(args.Member.Id, false);
+        await SqlHelper.IsvalidSupporter(args.Member.Id, false);
         await SupporterCommands.UpdateNames();
         await SupporterCommands.UpdateHashes();
 
@@ -329,37 +329,36 @@ public static partial class Service
             var content = role.Mention;
             if (isRS)
             {
-                if (SqlHelper.GetFixedIssue(out var threadIds))
+                var threadIds = SqlHelper.GetFixedIssue();
+
+                var ideaChannel = await Client.GetChannelAsync(Config.KnownIdeasChannel);
+                var bugChannel = await Client.GetChannelAsync(Config.KnownIssueChannel);
+
+                var result = await ideaChannel.Guild.ListActiveThreadsAsync();
+
+
+                foreach (var threadId in threadIds)
                 {
-                    var ideaChannel = await Client.GetChannelAsync(Config.KnownIdeasChannel);
-                    var bugChannel = await Client.GetChannelAsync(Config.KnownIssueChannel);
+                    var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
 
-                    var result = await ideaChannel.Guild.ListActiveThreadsAsync();
+                    if (thread == null) continue;
+                    //TODO: close thread.
 
-
-                    foreach (var threadId in threadIds)
+                    try
                     {
-                        var thread = result.Threads.FirstOrDefault(t => t.Id == threadId);
+                        if (!SqlHelper.GetIssueData(thread.Id, out var messageId)) continue;
+                        content += "\n- " + thread.Mention;
 
-                        if (thread == null) continue;
-                        //TODO: close thread.
-
-                        try
-                        {
-                            if (!SqlHelper.GetIssueData(thread.Id, out var messageIds)) continue;
-                            if (messageIds == null || messageIds.Length == 0) continue;
-                            content += "\n- " + thread.Mention;
-
-                            var deleteMessage = await ideaChannel.GetMessageAsync(messageIds[0])
-                                ?? await bugChannel.GetMessageAsync(messageIds[0]);
-                            await deleteMessage.DeleteAsync();
-                        }
-                        finally
-                        {
-                            SqlHelper.DeleteIssueData(thread.Id);
-                        }
+                        var deleteMessage = await ideaChannel.GetMessageAsync(messageId)
+                            ?? await bugChannel.GetMessageAsync(messageId);
+                        await deleteMessage.DeleteAsync();
+                    }
+                    finally
+                    {
+                        await SqlHelper.DeleteIssueData(thread.Id);
                     }
                 }
+
                 foreach (var thread in channel.Guild.Threads.Values)
                 {
                     if (thread.ParentId != Config.PreReleaseChannel) continue;

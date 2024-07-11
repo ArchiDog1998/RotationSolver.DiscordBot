@@ -173,7 +173,7 @@ public class SupporterCommands : ApplicationCommandModule
         await ctx.DeferAsync();
 
         var id = ctx.Member.Id;
-        var hasData = SqlHelper.GetName(id, out var value);
+        var hasData = SqlHelper.GetName(id, out var name);
 
         if (!hasData)
         {
@@ -185,19 +185,14 @@ public class SupporterCommands : ApplicationCommandModule
             .WithTitle("Your Information in the database.")
             .WithColor(DiscordColor.Blue);
 
-        if (value.Length != 0)
+        if (!string.IsNullOrEmpty(name))
         {
-            var v = value[0];
-
-            if (!string.IsNullOrEmpty(v))
-            {
-                embedItem = embedItem.AddField("Display Name", v);
-            }
+            embedItem = embedItem.AddField("Display Name", name);
         }
 
-        if (SqlHelper.GetHash(id, out value) && value.Length != 0)
+        if (SqlHelper.GetHash(id, out var hashesName) && hashesName.Length != 0)
         {
-            var hashes = string.Join("\n", value);
+            var hashes = string.Join("\n", hashesName);
 
             if (!string.IsNullOrEmpty(hashes))
             {

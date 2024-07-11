@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using RotationSolver.DiscordBot.Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RotationSolver.DiscordBot;
 
@@ -142,26 +143,44 @@ internal static class SqlHelper
         return item?.LodestoneID != null;
     }
 
-    public static void IsvalidSupporter(ulong id, bool valid)
+    public static async Task IsvalidSupporter(ulong id, bool valid)
     {
-        SetValues($"CALL public.isvalid_supporter({id}, {valid})");
+        using var connect = new PostgreContext();
+        var item = connect.Supporter.Find(id);
+        if (item == null) return;
+
+        item.IsValid = valid;
+        connect.Update(item);
+        await connect.SaveChangesAsync();
     }
 
     public static bool GetHash(ulong id, out string[] data)
     {
-        return GetObjects($"SELECT unnest(\"Supporter\".\"Hashes\") FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
+        using var connect = new PostgreContext();
+        var item = connect.Supporter.Find(id);
+        if (item == null)
+        {
+            data = [];
+            return false;
+        }
+
+        data = item.Hashes;
+        return true;
     }
 
-    public static bool GetName(ulong id, out string[] data)
+    public static bool GetName(ulong id, [MaybeNullWhen(false)] out string name)
     {
-        return GetObjects($"SELECT \"Supporter\".\"Name\" FROM public.\"Supporter\" WHERE \"DiscordID\" = {id}", out data);
+        using var connect = new PostgreContext();
+        var item = connect.Supporter.Find(id);
+        name = item?.Name;
+        return name != null;
     }
 
     public static async Task InitName(DiscordMember member)
     {
         var id = member.Id;
         var name = member.DisplayName;
-        if (!GetName(id, out var names) || names.Length == 0 || string.IsNullOrEmpty(names[0]))
+        if (!GetName(id, out _))
         {
             UpdateSupporterData(id, string.Empty, name);
             await SupporterCommands.UpdateNames();
@@ -170,20 +189,21 @@ internal static class SqlHelper
 
     public static string[] GetNames()
     {
-        GetObjects<string>("SELECT * FROM public.\"GetSupportersName\"", out var result);
-        return result;
+        using var connect = new PostgreContext();
+        return [.. connect.Supporter.Select(x => x.Name).Where(s => !string.IsNullOrEmpty(s))];
     }
 
     public static ulong[] GetDiscordIds()
     {
-        GetObjects<ulong>($"SELECT \"Supporter\".\"DiscordID\" FROM public.\"Supporter\"", out var result);
-        return result;
+        using var connect = new PostgreContext();
+        return [.. connect.Supporter.Select(x => x.DiscordID)];
     }
 
     public static string[] GetHashes()
     {
-        GetObjects<string>("SELECT * FROM public.\"GetSupportersHash\"", out var result);
-        return result;
+        using var connect = new PostgreContext();
+
+        return [.. connect.Supporter.Where(i => i.IsValid).ToArray().SelectMany(i => i.Hashes).Where(s => !string.IsNullOrEmpty(s))];
     }
 
     private static void SetValues(string cmd)
@@ -196,6 +216,7 @@ internal static class SqlHelper
         command.ExecuteNonQuery();
     }
 
+    [Obsolete]
     private static bool GetObjects<T>(string cmd, out T[] array, Func<NpgsqlDataReader, T>? convert = null)
     {
         convert ??= r => (T)Convert.ChangeType(r[0], typeof(T));

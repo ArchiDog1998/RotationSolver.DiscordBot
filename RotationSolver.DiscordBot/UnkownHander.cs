@@ -149,7 +149,7 @@ internal static class UnkownHander
             }
             else
             {
-                SqlHelper.IsvalidSupporter(member.Id, false);
+                await SqlHelper.IsvalidSupporter(member.Id, false);
             }
         }
         if (roles.Any(i => i == Config.RotationDevRole)) //Rotation Dev.

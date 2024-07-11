@@ -82,7 +82,7 @@ public class SupporterCommands : ApplicationCommandModule
     {
         await ctx.DeferAsync();
 
-        SqlHelper.UpdateSupporterData(ctx.Member.Id, string.Empty, name);
+        await SqlHelper.UpdateSupporterData(ctx.Member.Id, string.Empty, name);
         await UpdateNames();
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your ingame display name."));
@@ -131,7 +131,7 @@ public class SupporterCommands : ApplicationCommandModule
             return;
         }
 
-        SqlHelper.UpdateSupporterData(ctx.Member.Id, hash, string.Empty);
+        await SqlHelper.UpdateSupporterData(ctx.Member.Id, hash, string.Empty);
         await UpdateHashes();
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Changed your hash. Please reload the RS plugin in about 10 mins. And please do NOT leave this server, or you'll lose the supporter-only features!"));
     }

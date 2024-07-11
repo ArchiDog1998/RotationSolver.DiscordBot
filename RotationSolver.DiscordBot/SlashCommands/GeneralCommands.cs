@@ -323,7 +323,7 @@ public class GeneralCommands : ApplicationCommandModule
                 continue;
             }
 
-            SqlHelper.FixedIssueData(threadId);
+            await SqlHelper.FixedIssueData(threadId);
             content += "\n" + thread.Mention;
             //TODO: close thread.
         }

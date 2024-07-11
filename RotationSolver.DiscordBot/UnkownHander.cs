@@ -155,11 +155,11 @@ internal static class UnkownHander
         if (roles.Any(i => i == Config.RotationDevRole)) //Rotation Dev.
         {
             DiscordChannel? channel = null;
-            if (SqlHelper.GetChannelId(member.Id, out var data) && data.Length > 0)
+            if (SqlHelper.GetChannelId(member.Id, out var data))
             {
                 try
                 {
-                    channel = guild.GetChannel(data[0]);
+                    channel = guild.GetChannel(data);
                 }
                 catch
                 {
@@ -177,7 +177,7 @@ internal static class UnkownHander
                     var p = new DiscordOverwriteBuilder(member).Allow(permissions);
                     channel = await guild.CreateChannelAsync($"🌱┃{member.DisplayName} Rotations", ChannelType.GuildForum, parent, $"Talk about everything about the rotations from {member.Mention}!", overwrites: [p]);
 
-                    SqlHelper.UpdateRotationDevChannel(member.Id, channel.Id);
+                    await SqlHelper.UpdateRotationDevChannel(member.Id, channel.Id);
 
                     await guild.GetChannel(Config.RotationAnnounceMentChannel).ModifyPositionAsync(0);
                 }
@@ -187,17 +187,16 @@ internal static class UnkownHander
                     await channel.AddOverwriteAsync(member, permissions, reason: $"{member.DisplayName} becomes a rotation developer!");
                 }
 
-                var builder = new DiscordEmbedBuilder()
+                var embed = new DiscordEmbedBuilder()
                 {
                     Title = "**You are Rotation Developer Now!**",
                     Color = DiscordColor.CornflowerBlue,
-                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. \n\nYou'd better to add the `Download Link` of your libraries to the `Post Guidelines`!\nYou can also add the [webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks) to your repo.\n{Config.PublishLink} for release.\n {Config.PushLink} for push.\nHave fun!",
+                    Description = $"Hello {member.Mention}, thank you for being interested about making a rotation for Rotation Solver, you can use {channel.Mention} to receive feedback from the other players that want to use your rotation if you wish to. \n\nYou'd better to add the `Download Link` of your libraries to the `Post Guidelines` in your channel!\nYou can also add the [webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks) to your repo.\n{Config.PublishLink} for release.\n {Config.PushLink} for push.\nHave fun!",
                     Footer = new() { Text = "Come on! You are the best!" },
                 }
                 .WithThumbnail("https://raw.githubusercontent.com/ArchiDog1998/RotationSolver/main/Images/Logo.png");
 
-
-                await member.SendMessageAsync(builder);
+                await member.SendMessageAsync(embed);
             }
             else
             {

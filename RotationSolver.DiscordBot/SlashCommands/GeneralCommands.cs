@@ -2,8 +2,11 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using System;
 using System.Collections.Concurrent;
+using NetStone;
+using Octokit;
+using System.Reflection;
+using NetStone.Model.Parseables.Character.ClassJob;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 
@@ -131,6 +134,39 @@ public class GeneralCommands : ApplicationCommandModule
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Your request was sent to {dev.Mention}, so please wait."));
     }
 
+    [BotChannel]
+    [RotationDevRole]
+    [SlashCommand("lodestonedev", "Send my lodestone id for sending my job levels")]
+    public async Task MyLodestone(InteractionContext ctx, 
+        [Option("lodestone", "Lodestone ID")] long lodestoneid)
+    {
+        await ctx.DeferAsync();
+
+        var id = ctx.Member.Id;
+
+        uint lodestone = 0;
+        try
+        {
+            lodestone = Convert.ToUInt32(lodestoneid);
+        }
+        catch
+        {
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Failed to convert your id to `uint`. Please check your value!"));
+        }
+        var result = await SqlHelper.UpdateRotationDevLodestone(id, lodestone);
+
+        await ctx.DeleteResponseAsync();
+
+        if (result)
+        {
+            await ctx.Channel.SendMessageAsync($"Dear {ctx.Member.Mention}, your lodestone id was changed!");
+        }
+        else
+        {
+            await ctx.Channel.SendMessageAsync($"Dear {ctx.Member.Mention}, there is no Rotation Dev information in database! Failed to change your lodeston id.");
+        }
+    }
+
     [RotationDevRole]
     [SlashCommand("pollforjobs", "Poll for jobs for helping you choose the job to develop.")]
     public async Task PollForJobs(InteractionContext ctx,
@@ -148,16 +184,45 @@ public class GeneralCommands : ApplicationCommandModule
             Description = $"Which **{combatType}** jobs should {ctx.Member.Mention} {type.ToString().ToLower()}? Please click the emoji you want to select from the ones below.",
         };
 
+        var emojis = ctx.Guild.Emojis.Values.Where(e => e.Name.StartsWith("Job")).OrderBy(v => v.Id);
+
+        if (SqlHelper.GetLodestoneId(ctx.Member.Id, out var lodestonId))
+        {
+            var lodestoneClient = await LodestoneClient.GetClientAsync();
+            var lodestoneCharacter = await lodestoneClient.GetCharacter(lodestonId.ToString());
+            if (lodestoneCharacter != null)
+            {
+                var jobs = await lodestoneCharacter.GetClassJobInfo();
+
+                if (jobs != null)
+                {
+                    Dictionary<JobCate, List<(ClassJobEntry entity, string name, DiscordEmoji emoji)>> entities = [];
+                    foreach (var emoji in emojis)
+                    {
+                        var name = emoji.Name[3..];
+                        var entity = (ClassJobEntry)jobs.GetType().GetProperty(name)!.GetValue(jobs)!;
+                        var cate = EventHander.JobCategory[name];
+
+                        if (!entities.TryGetValue(cate, out var list)) entities[cate] = list = [];
+                        list.Add((entity, name, emoji));
+                    }
+
+                    foreach ((var cate, var classJobs) in entities)
+                    {
+                        builder.AddField(cate.ToString(), string.Join("\n", classJobs.Select(j => $"{j.emoji} {j.name} Lvl.{j.entity.Level}")), true);
+                    }
+                }
+            }
+        }
+
         if (days > 0)
         {
             builder.Timestamp = DateTime.UtcNow.AddDays(days);
         }
-
         var messages = new List<DiscordMessage>() { await channel.SendMessageAsync(builder) };
 
-        foreach (var emoji in ctx.Guild.Emojis.Values.OrderBy(v => v.Id))
+        foreach (var emoji in emojis)
         {
-            if (!emoji.Name.StartsWith("Job")) continue;
             var message = messages.Last();
 
             try
@@ -193,7 +258,7 @@ public class GeneralCommands : ApplicationCommandModule
             {
                 var message = await channel.GetMessageAsync(msg.Id);
 
-                foreach (var reaction in message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job")))
+                foreach (var reaction in message.Reactions.Where(reaction => reaction.Emoji.Name.StartsWith("Job") && reaction.IsMe))
                 {
                     if (!Counts.TryGetValue(reaction.Emoji, out var count)) count = 0;
                     Counts[reaction.Emoji] = reaction.Count - 1 + count;

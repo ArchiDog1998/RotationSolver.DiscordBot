@@ -86,14 +86,60 @@ internal static class SqlHelper
         }
     }
 
-    public static void UpdateRotationDevChannel(ulong id, ulong? channelId)
+    public static async Task UpdateRotationDevChannel(ulong id, ulong channelId)
     {
-        SetValues($"CALL public.upsert_rotation_dev({id}, {(channelId.HasValue ? channelId.Value : "null")})");
+        using var connect = new PostgreContext();
+
+        await connect.RotationDev
+            .Upsert(new DeveloperItem()
+            {
+                DiscordID = id,
+                ChannelID = channelId,
+            })
+            .On(i => new { i.DiscordID })
+            .WhenMatched(i => new DeveloperItem()
+            {
+                ChannelID = channelId,
+            })
+            .RunAsync();
+
+        await connect.SaveChangesAsync();
     }
 
-    public static bool GetChannelId(ulong id, out ulong[] data)
+    public static async Task<bool> UpdateRotationDevLodestone(ulong id, uint lodestone)
     {
-        return GetObjects($"SELECT \"RotationDev\".\"ChannelID\" FROM public.\"RotationDev\" WHERE \"DiscordID\" = {id}", out data);
+        using var connect = new PostgreContext();
+
+        var item = connect.RotationDev.Find(id);
+
+        if (item == null) return false;
+
+        item.LodestoneID = lodestone;
+        connect.Update(item);
+
+        await connect.SaveChangesAsync();
+
+        return true;
+    }
+
+    public static bool GetChannelId(ulong id, out ulong data)
+    {
+        using var connect = new PostgreContext();
+
+        var item = connect.RotationDev.Find(id);
+
+        data = item?.ChannelID ?? 0;
+        return item?.ChannelID != null;
+    }
+
+    public static bool GetLodestoneId(ulong id, out uint data)
+    {
+        using var connect = new PostgreContext();
+
+        var item = connect.RotationDev.Find(id);
+
+        data = item?.LodestoneID ?? 0;
+        return item?.LodestoneID != null;
     }
 
     public static void IsvalidSupporter(ulong id, bool valid)

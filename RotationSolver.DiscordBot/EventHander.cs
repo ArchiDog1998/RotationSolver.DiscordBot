@@ -20,10 +20,10 @@ internal static class EventHander
 {
     internal const string EventTittle = "🤪 Happy Bunny Event 🤪";
 
-    private static readonly Dictionary<string, JobCate> JobCategory = new ()
+    internal static readonly Dictionary<string, JobCate> JobCategory = new ()
     {
         {"Warrior", JobCate.Tank},
-        { "Paladin", JobCate.Tank },
+        {"Paladin", JobCate.Tank },
         {"Gunbreaker", JobCate.Tank },
         {"DarkKnight", JobCate.Tank },
 
@@ -37,14 +37,16 @@ internal static class EventHander
         {"Reaper", JobCate.Melee },
         {"Ninja", JobCate.Melee },
         {"Dragoon", JobCate.Melee },
+        {"Viper", JobCate.Melee },
 
-        { "Dancer", JobCate.Range },
+        {"Dancer", JobCate.Range },
         {"Machinist", JobCate.Range },
         {"Bard", JobCate.Range },
 
         {"Summoner", JobCate.Caster },
         {"RedMage", JobCate.Caster },
         {"BlackMage", JobCate.Caster},
+        {"Pictomancer", JobCate.Caster},
 
         {"BlueMage", JobCate.Limited },
     };

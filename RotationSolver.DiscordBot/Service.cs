@@ -4,8 +4,6 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
 using RotationSolver.DiscordBot.SlashCommands;
-using System;
-using System.Runtime.InteropServices;
 using System.Web;
 
 namespace RotationSolver.DiscordBot;
@@ -192,7 +190,7 @@ public static partial class Service
         if (member.IsBot) return;
         if (member.Roles.Any(r => r.Id == Config.ModeratorRole)) return; //Moderators can do anything!
 
-        await DontAtMe(args, member);
+        await DontAtMe(args);
         await ManageLogMessages(args, member);
     }
 
@@ -216,7 +214,7 @@ public static partial class Service
         await member.SendMessageAsync($"You have to post at least one pic on the {args.Channel.Mention}!");
     }
 
-    private static async Task DontAtMe(MessageCreateEventArgs args, DiscordMember member)
+    private static async Task DontAtMe(MessageCreateEventArgs args)
     {
         var message = await args.Channel.GetMessageAsync(args.Message.Id);
         if (message.ReferencedMessage != null) return;
@@ -282,9 +280,9 @@ public static partial class Service
         await SupporterCommands.UpdateHashes();
 
         //Invalid Rotation Dev.
-        if (SqlHelper.GetChannelId(args.Member.Id, out var data) && data.Length > 0)
+        if (SqlHelper.GetChannelId(args.Member.Id, out var data))
         {
-            var channel = args.Guild.GetChannel(data[0]);
+            var channel = args.Guild.GetChannel(data);
 
             await CanViewChannel(channel, false);
             await channel.DeleteOverwriteAsync(args.Member, $"{args.Member.DisplayName} left this guild!");

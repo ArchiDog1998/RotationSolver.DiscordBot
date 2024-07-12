@@ -78,16 +78,16 @@ internal static class SqlHelper
         await connect.SaveChangesAsync();
     }
 
-    public static IEnumerable<ulong> GetFixedIssue()
+    public static ulong[] GetFixedIssue()
     {
         using var connect = new PostgreContext();
-        return connect.Issues.Where(i => i.Fixed).Select(i => i.ThreadID);
+        return [.. connect.Issues.Where(i => i.Fixed).Select(i => i.ThreadID)];
     }
 
-    public static IEnumerable<ulong> GetNotFixedIssue()
+    public static ulong[] GetNotFixedIssue()
     {
         using var connect = new PostgreContext();
-        return connect.Issues.Where(i => !i.Fixed).Select(i => i.ThreadID);
+        return [..connect.Issues.Where(i => !i.Fixed).Select(i => i.ThreadID)];
     }
 
     public static bool GetIssueData(ulong id, out ulong data)

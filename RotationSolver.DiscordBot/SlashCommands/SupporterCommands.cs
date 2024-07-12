@@ -45,7 +45,6 @@ public class SupporterCommands : ApplicationCommandModule
     [SlashCooldown(5, 600, SlashCooldownBucketType.User)]
     [SupporterCheck(Config.SupporterRole)]
     [SlashCommand("Refund", "Get your refund if you made a mistake.")]
-
     public async Task GetRefund(InteractionContext ctx,
         [Option("KofiName", "Your name in the ko-fi")] string name,
         [Option("Time", "The time about your support")] string time)

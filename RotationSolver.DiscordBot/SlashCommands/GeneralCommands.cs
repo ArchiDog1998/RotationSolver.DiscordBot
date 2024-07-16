@@ -2,11 +2,9 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using System.Collections.Concurrent;
 using NetStone;
-using Octokit;
-using System.Reflection;
 using NetStone.Model.Parseables.Character.ClassJob;
+using System.Collections.Concurrent;
 
 namespace RotationSolver.DiscordBot.SlashCommands;
 

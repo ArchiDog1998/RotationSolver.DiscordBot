@@ -42,7 +42,7 @@ internal static class SqlHelper
 
         var item = connect.Supporter.Find(id);
 
-        if(item == null)
+        if (item == null)
         {
             await connect.Supporter.AddAsync(new SupporterItem
             {
@@ -53,7 +53,21 @@ internal static class SqlHelper
         }
         else
         {
-            item.Hashes = hash == null ? item.Hashes : item.Hashes.Append(hash).TakeLast(8).ToArray();
+            if (hash != null)
+            {
+                if (item.Hashes.Contains(hash))
+                {
+                    var list = item.Hashes.Where(s => !string.IsNullOrEmpty(s)).ToList();
+                    list.Remove(hash);
+                    list.Insert(0, hash);
+                    item.Hashes = [..list];
+                }
+                else
+                {
+                    item.Hashes = item.Hashes.Append(hash).Where(s => !string.IsNullOrEmpty(s)).TakeLast(8).ToArray();
+                }
+                
+            }
             item.Name = name ?? item.Name;
             connect.Update(item);
         }

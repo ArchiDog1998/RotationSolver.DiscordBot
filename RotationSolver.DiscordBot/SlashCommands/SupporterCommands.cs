@@ -184,7 +184,7 @@ public class SupporterCommands : ApplicationCommandModule
             .WithTitle("Your Information in the database.")
             .WithColor(DiscordColor.Blue);
 
-        if (!string.IsNullOrEmpty(name))
+        if (!string.IsNullOrEmpty(name?.Trim()))
         {
             embedItem = embedItem.AddField("Display Name", name);
         }
@@ -193,7 +193,7 @@ public class SupporterCommands : ApplicationCommandModule
         {
             var hashes = string.Join("\n", hashesName);
 
-            if (!string.IsNullOrEmpty(hashes))
+            if (!string.IsNullOrEmpty(hashes.Trim()))
             {
                 embedItem = embedItem.AddField("Hashes", hashes);
             }

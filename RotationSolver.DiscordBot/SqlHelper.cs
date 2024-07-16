@@ -66,7 +66,7 @@ internal static class SqlHelper
                 {
                     item.Hashes = item.Hashes.Append(hash).Where(s => !string.IsNullOrEmpty(s)).TakeLast(8).ToArray();
                 }
-                
+                item.IsValid = true;
             }
             item.Name = name ?? item.Name;
             connect.Update(item);

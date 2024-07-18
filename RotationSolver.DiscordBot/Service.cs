@@ -211,7 +211,7 @@ public static partial class Service
             messagebuilder = messagebuilder.WithContent(content);
             var message = await args.Channel.SendMessageAsync(messagebuilder);
 
-            int index = 0;
+            DateTime time = DateTime.Now;
             await foreach (var update in GptHelper.GptTalk(question))
             {
                 foreach (ChatMessageContentPart updatePart in update.ContentUpdate)
@@ -219,8 +219,9 @@ public static partial class Service
                     content += updatePart.Text;
                 }
 
-                if (index++ % 20 == 0)
+                if (DateTime.Now - time > TimeSpan.FromSeconds(3))
                 {
+                    time = DateTime.Now;
                     try
                     {
                         await message.ModifyAsync(content);
@@ -231,6 +232,7 @@ public static partial class Service
                     }
                 }
             }
+            await message.ModifyAsync(content);
         }
         else
         {

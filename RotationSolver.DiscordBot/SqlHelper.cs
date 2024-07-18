@@ -1,6 +1,5 @@
 ﻿using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using RotationSolver.DiscordBot.Npgsql;
 using RotationSolver.DiscordBot.SlashCommands;
 using System.Diagnostics.CodeAnalysis;
@@ -9,11 +8,6 @@ namespace RotationSolver.DiscordBot;
 
 internal static class SqlHelper
 {
-    private static NpgsqlConnection CreateConnection()
-    {
-        return new NpgsqlConnection(Config.PostgreSQL);
-    }
-
     public static async Task<CommitItem[]> GetAndClearCommits()
     {
         using var connect = new PostgreContext();

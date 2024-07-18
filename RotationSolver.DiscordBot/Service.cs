@@ -3,8 +3,10 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json.Linq;
+using OpenAI.Chat;
 using RotationSolver.DiscordBot.SlashCommands;
 using System.Web;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace RotationSolver.DiscordBot;
 
@@ -178,6 +180,8 @@ public static partial class Service
 
     private static async Task Client_MessageCreated(DiscordClient sender, MessageCreateEventArgs args)
     {
+        await AnswerQuestionAsync(args);
+
         if (args.Guild == null) return;
         var member = await args.Guild.GetMemberAsync(args.Author.Id);
         if (member == null) return;
@@ -192,6 +196,47 @@ public static partial class Service
 
         await DontAtMe(args);
         await ManageLogMessages(args, member);
+    }
+
+    private static async Task AnswerQuestionAsync(MessageCreateEventArgs args)
+    {
+        if (args.Message.ReferencedMessage != null) return;
+        if (!args.Message.MentionedUsers.Contains(Client.CurrentUser)) return;
+
+        var messagebuilder = new DiscordMessageBuilder().WithReply(args.Message.Id);
+        if (args.Channel.Id is Config.QuestionChannel)
+        {
+            var question = args.Message.Content.Replace(Client.CurrentUser.Mention, "");
+            var content = "> " + question.Replace("\n", "> ") + "\n\n";
+            messagebuilder = messagebuilder.WithContent(content);
+            var message = await args.Channel.SendMessageAsync(messagebuilder);
+
+            int index = 0;
+            await foreach (var update in GptHelper.GptTalk(question))
+            {
+                foreach (ChatMessageContentPart updatePart in update.ContentUpdate)
+                {
+                    content += updatePart.Text;
+                }
+
+                if (index++ % 20 == 0)
+                {
+                    try
+                    {
+                        await message.ModifyAsync(content);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+        else
+        {
+            messagebuilder = messagebuilder.WithContent($"I am very proud, I will only answer you in {args.Guild.GetChannel(Config.QuestionChannel).Mention}!");
+            await args.Channel.SendMessageAsync(messagebuilder);
+        }
     }
 
     internal static async Task AddAnimatedLogo(DiscordGuild guild, DiscordMessage message)

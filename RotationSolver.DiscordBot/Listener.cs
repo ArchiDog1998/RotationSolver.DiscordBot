@@ -49,6 +49,11 @@ internal class Listener : IDisposable
 
                     case "/patreon":
                         Service.SendPatreon(contentStr);
+
+                        var dev = Service.Client.GetChannelAsync(Config.ModeratorChannel).Result;
+
+                        if (dev == null) break;
+                        dev.SendMessageAsync(contentStr);
                         break;
                 }
             }

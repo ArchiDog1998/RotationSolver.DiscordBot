@@ -81,7 +81,6 @@ public class GeneralCommands : ApplicationCommandModule
         var builder = new DiscordEmbedBuilder()
         {
             Title = "FF Logs using RS!",
-            ImageUrl = pics.Url,
             Color = DiscordColor.HotPink,
             Description = text ?? string.Empty,
         };
@@ -99,7 +98,8 @@ public class GeneralCommands : ApplicationCommandModule
             builder = builder.AddField("FF Logs Owner", ctx.Member.Mention, true);
         }
 
-        await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder));
+        using var client = new HttpClient();
+        await channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(builder).AddFile(pics.FileName, await client.GetStreamAsync(pics.Url)));
         await ctx.DeleteResponseAsync();
     }
 

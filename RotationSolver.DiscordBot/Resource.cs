@@ -541,9 +541,13 @@ internal static class Resource
         ("The Strayborough Deadwalk", 112561, 1, 1, 2),
         ("The Interphos", 112566, 2, 2, 4),
         ("AAC Light-heavyweight M1", 112567, 2, 2, 4),
+        ("AAC Light-heavyweight M1 (Savage)", 112568, 2, 2, 4),
         ("AAC Light-heavyweight M2", 112569, 2, 2, 4),
+        ("AAC Light-heavyweight M2 (Savage)", 112570, 2, 2, 4),
         ("AAC Light-heavyweight M3", 112571, 2, 2, 4),
+        ("AAC Light-heavyweight M3 (Savage)", 112572, 2, 2, 4),
         ("AAC Light-heavyweight M4", 112573, 2, 2, 4),
+        ("AAC Light-heavyweight M4 (Savage)", 112574, 2, 2, 4),
         ("Everkeep", 112564, 2, 2, 4),
         ("Everkeep (Extreme)", 112565, 2, 2, 4),
     ];

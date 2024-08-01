@@ -22,8 +22,8 @@ public class SupporterCheckAttribute(params ulong[] roleIds) : BotChannelAttribu
                 Url = "https://www.patreon.com/ArchiDog1998",
                 ImageUrl = "https://c7.patreon.com/https%3A%2F%2Fwww.patreon.com%2F%2Fcreator-teaser-image%2F7803473/selector/%23creator-teaser%2C.png",
                 Color = DiscordColor.IndianRed,
-                Description = $"Hi, {ctx.Member.Mention}! You dont have any of the following roles: {string.Join(", ", roles)}!\n \n"
-                    + "If you have supported, please use command `/askforrole` with your reciept!"
+                Description = $"Hi, {ctx.Member.Mention}! You don't have any of the following roles: {string.Join(", ", roles)}!"
+                    + "\n \nIf you have supported, please make sure that you linked your Discord Account to your [Patreon](https://support.patreon.com/hc/en-us/articles/212052266-Getting-Discord-access) or [Ko-fi](https://help.ko-fi.com/hc/en-us/articles/8664701197073-How-do-I-join-a-Creator-s-Discord). If it still doesn't work, please use command `/askforrole` with your receipt!"
                     + "\nIf you want a refund, please use command `/Supporter refund` with your ko-fi name!",
                 Footer = new() { Text = "It's just $2!" },
             };

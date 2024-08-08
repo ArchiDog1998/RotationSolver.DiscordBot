@@ -94,7 +94,7 @@ internal static class GithubHelper
         }
         catch(Exception ex)
         {
-            Console.WriteLine(ex.Message + '\n' + (ex.StackTrace ?? string.Empty));
+            await Service.SendException(ex);
             return;
         }
     }

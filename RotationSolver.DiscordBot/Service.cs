@@ -473,7 +473,7 @@ public static partial class Service
         }
     }
 
-    private static async Task<DiscordChannel?> SendException(Exception? ex, string mention = "")
+    internal static async Task<DiscordChannel?> SendException(Exception? ex, string mention = "")
     {
         var dev = await Client.GetChannelAsync(Config.ModeratorChannel);
         if (dev == null)

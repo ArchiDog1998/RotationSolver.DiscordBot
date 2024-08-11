@@ -25,6 +25,7 @@ internal static class SqlHelper
     {
         using var connect = new PostgreContext();
 
+        if (await connect.GithubCommit.FindAsync(sha) == null) return;
         connect.GithubCommit.Add(new() { Sha = sha, Repo = repoId, });
 
         await connect.SaveChangesAsync();
@@ -34,7 +35,7 @@ internal static class SqlHelper
     {
         using var connect = new PostgreContext();
 
-        var item = connect.Supporter.Find(id);
+        var item = await connect.Supporter.FindAsync(id);
 
         if (item == null)
         {

@@ -491,7 +491,8 @@ public static partial class Service
         {
             str += "\nFrom " + mention;
         }
-        await dev.SendMessageAsync(str);
+       
+        await dev.SendMessageAsync(str[..Math.Min(str.Length - 1, 2000)]);
 
         return dev;
     }
